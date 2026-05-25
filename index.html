@@ -195,9 +195,11 @@
       cursor: grab;
       flex-shrink: 0;
       line-height: 1;
+      touch-action: none; /* prevents scroll hijacking on mobile */
+      padding: 4px 2px;   /* larger tap target */
     }
 
-    .item:active .drag-handle { cursor: grabbing; }
+    .drag-handle:active { cursor: grabbing; }
 
     /* ── Checkbox ──────────────────────────────────────────────────────────── */
     .item-check {
@@ -323,10 +325,10 @@
 <body>
 
   <header>
-    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.2</span></h1>
+    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.4</span></h1>
     <nav class="tabs">
-      <button class="tab active" data-tab="today">Today</button>
-      <button class="tab" data-tab="all">All</button>
+      <button class="tab active" data-tab="today">☀︎ Today</button>
+      <button class="tab" data-tab="all">∷ All</button>
     </nav>
   </header>
 
@@ -430,14 +432,12 @@
       const el = document.createElement('div');
       el.className = 'item' + (item.completed ? ' completed' : '');
       el.dataset.id = item.id;
-      el.draggable = true;
-
       el.innerHTML = `
         <span class="drag-handle" aria-hidden="true">⠿</span>
         <div class="item-check${item.completed ? ' checked' : ''}" role="checkbox"
              aria-checked="${item.completed}" tabindex="0"></div>
         <span class="item-text">${esc(item.text)}</span>
-        <button class="btn-move" data-action="move" title="Move to All">☰</button>
+        <button class="btn-move" data-action="move" title="Move to All">∷</button>
         <div class="item-actions">
           <button class="btn-action btn-delete" data-action="delete">✕</button>
         </div>
@@ -525,8 +525,6 @@
       const el = document.createElement('div');
       el.className = 'item';
       el.dataset.id = item.id;
-      el.draggable = true;
-
       el.innerHTML = `
         <span class="drag-handle" aria-hidden="true">⠿</span>
         <span class="item-text">${esc(item.text)}</span>
@@ -559,51 +557,104 @@
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Drag-to-reorder
-    // Works on a rendered list; reorders within `masterArray` by id.
+    // Drag-to-reorder (pointer events — works on touch & mouse)
     // ─────────────────────────────────────────────────────────────────────────
     function attachDrag(listEl, masterArray, rerenderFn) {
-      let dragSrcId = null;
 
-      listEl.querySelectorAll('.item').forEach(el => {
+      listEl.querySelectorAll('.drag-handle').forEach(handle => {
+        handle.addEventListener('pointerdown', startDrag);
+      });
 
-        el.addEventListener('dragstart', e => {
-          dragSrcId = el.dataset.id;
-          el.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', dragSrcId);
+      function startDrag(e) {
+        e.preventDefault();
+        const dragEl = e.currentTarget.closest('.item');
+        if (!dragEl) return;
+
+        const rect = dragEl.getBoundingClientRect();
+        const offsetY = e.clientY - rect.top;
+        const offsetX = e.clientX - rect.left;
+
+        // Floating clone that follows the pointer
+        const clone = dragEl.cloneNode(true);
+        Object.assign(clone.style, {
+          position:      'fixed',
+          top:           rect.top + 'px',
+          left:          rect.left + 'px',
+          width:         rect.width + 'px',
+          margin:        '0',
+          zIndex:        '999',
+          opacity:       '0.92',
+          pointerEvents: 'none',
+          boxShadow:     '0 10px 30px rgba(60,42,30,0.25)',
+          transform:     'rotate(1.5deg) scale(1.03)',
         });
+        document.body.appendChild(clone);
 
-        el.addEventListener('dragend', () => {
-          el.classList.remove('dragging');
-          listEl.querySelectorAll('.item').forEach(i => i.classList.remove('drag-over'));
+        // Placeholder slot
+        const placeholder = document.createElement('div');
+        Object.assign(placeholder.style, {
+          height:       rect.height + 'px',
+          border:       '2px dashed #E8C4A0',
+          borderRadius: '10px',
+          background:   '#FAEBDF',
+          opacity:      '0.7',
+          flexShrink:   '0',
         });
+        dragEl.after(placeholder);
+        dragEl.style.opacity = '0';
+        dragEl.style.pointerEvents = 'none';
 
-        el.addEventListener('dragover', e => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          if (el.dataset.id !== dragSrcId) el.classList.add('drag-over');
-        });
+        function onMove(e) {
+          clone.style.top  = (e.clientY - offsetY) + 'px';
+          clone.style.left = (e.clientX - offsetX) + 'px';
 
-        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+          // Find item under the pointer (hide clone so it doesn't block hit-test)
+          clone.style.visibility = 'hidden';
+          const elBelow = document.elementFromPoint(e.clientX, e.clientY);
+          clone.style.visibility = '';
 
-        el.addEventListener('drop', e => {
-          e.preventDefault();
-          el.classList.remove('drag-over');
-          const dstId = el.dataset.id;
-          if (!dragSrcId || dragSrcId === dstId) return;
+          if (!elBelow) return;
+          const target = elBelow.closest('.item');
+          if (!target || target === dragEl || target.closest('.items-list') !== listEl) return;
 
-          const srcIdx = masterArray.findIndex(i => i.id === dragSrcId);
-          const dstIdx = masterArray.findIndex(i => i.id === dstId);
-          if (srcIdx === -1 || dstIdx === -1) return;
+          const mid = target.getBoundingClientRect().top + target.getBoundingClientRect().height / 2;
+          if (e.clientY < mid) {
+            listEl.insertBefore(placeholder, target);
+          } else {
+            target.after(placeholder);
+          }
+        }
 
-          const [moved] = masterArray.splice(srcIdx, 1);
-          masterArray.splice(dstIdx, 0, moved);
+        function onUp() {
+          cleanup();
+
+          // Derive new order from the DOM, then sync into masterArray
+          const newIds = Array.from(listEl.querySelectorAll('.item')).map(el => el.dataset.id);
+          const idSet  = new Set(newIds);
+          const sorted = newIds.map(id => masterArray.find(i => i.id === id)).filter(Boolean);
+          let si = 0;
+          for (let i = 0; i < masterArray.length; i++) {
+            if (idSet.has(masterArray[i].id)) masterArray[i] = sorted[si++];
+          }
 
           save();
           rerenderFn();
-        });
-      });
+        }
+
+        function cleanup() {
+          clone.remove();
+          placeholder.remove();
+          dragEl.style.opacity = '';
+          dragEl.style.pointerEvents = '';
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup',   onUp);
+          document.removeEventListener('pointercancel', cleanup);
+        }
+
+        document.addEventListener('pointermove',   onMove);
+        document.addEventListener('pointerup',     onUp);
+        document.addEventListener('pointercancel', cleanup);
+      }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
