@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>my to-do</title>
+  <style>
+    :root {
+      --bg:           #FAF6F0;
+      --surface:      #F2E9DE;
+      --surface-2:    #E8DDD0;
+      --border:       #DDD0BF;
+      --primary:      #B8622A;
+      --primary-lt:   #E8C4A0;
+      --text:         #3C2A1E;
+      --text-muted:   #9C7E6A;
+      --completed:    #C4B0A0;
+      --soon-bg:      #FAEBDF;
+      --soon-fg:      #B8622A;
+      --later-bg:     #EDE8DE;
+      --later-fg:     #7A7258;
+      --radius:       10px;
+      --shadow:       0 2px 10px rgba(60,42,30,0.09);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header / Tabs ─────────────────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 22px 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.3px;
+      margin-bottom: 16px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+    }
+
+    .tab {
+      padding: 9px 22px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      border-bottom: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px 8px 0 0;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .tab:hover { color: var(--text); }
+
+    .tab.active {
+      background: var(--bg);
+      color: var(--primary);
+      border-color: var(--border);
+      border-bottom-color: var(--bg);
+    }
+
+    /* ── Content ───────────────────────────────────────────────────────────── */
+    .content {
+      max-width: 580px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Add Form ──────────────────────────────────────────────────────────── */
+    .add-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .add-form input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .add-form input[type="text"]::placeholder { color: var(--text-muted); }
+    .add-form input[type="text"]:focus { border-color: var(--primary); }
+
+    .tag-select {
+      padding: 10px 8px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      outline: none;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .btn-add {
+      padding: 10px 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 22px;
+      font-weight: 300;
+      line-height: 1;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn-add:hover { opacity: 0.88; }
+    .btn-add:active { transform: scale(0.95); }
+
+    /* ── Group Labels ──────────────────────────────────────────────────────── */
+    .group-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
+      padding: 0 2px;
+      margin: 24px 0 8px;
+    }
+
+    .group-label:first-child { margin-top: 0; }
+
+    /* ── Items ─────────────────────────────────────────────────────────────── */
+    .items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 12px;
+      box-shadow: var(--shadow);
+      cursor: grab;
+      transition: opacity 0.15s, box-shadow 0.15s, transform 0.1s;
+      user-select: none;
+      position: relative;
+    }
+
+    .item:active { cursor: grabbing; }
+
+    .item.dragging {
+      opacity: 0.35;
+      box-shadow: none;
+    }
+
+    .item.drag-over {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-lt);
+    }
+
+    /* ── Drag handle ───────────────────────────────────────────────────────── */
+    .drag-handle {
+      font-size: 15px;
+      color: var(--text-muted);
+      opacity: 0.45;
+      cursor: grab;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .item:active .drag-handle { cursor: grabbing; }
+
+    /* ── Checkbox ──────────────────────────────────────────────────────────── */
+    .item-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--primary-lt);
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .item-check.checked {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .item-check.checked::after {
+      content: '';
+      display: block;
+      width: 9px;
+      height: 5px;
+      border-left: 2px solid #fff;
+      border-bottom: 2px solid #fff;
+      transform: rotate(-45deg) translateY(-1px);
+    }
+
+    /* ── Item text ─────────────────────────────────────────────────────────── */
+    .item-text {
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .item.completed .item-text {
+      text-decoration: line-through;
+      color: var(--completed);
+    }
+
+    /* ── Tags ──────────────────────────────────────────────────────────────── */
+    .item-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      border: none;
+      outline: none;
+    }
+
+    .item-tag:hover { opacity: 0.75; }
+
+    .tag-soon   { background: var(--soon-bg);  color: var(--soon-fg); }
+    .tag-later  { background: var(--later-bg); color: var(--later-fg); }
+    .tag-none   { background: var(--surface-2); color: var(--text-muted); }
+
+    /* ── Action buttons ────────────────────────────────────────────────────── */
+    .item-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .item:hover .item-actions { opacity: 1; }
+
+    .btn-action {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+
+    .btn-action:hover {
+      background: var(--surface-2);
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+
+    .btn-action.btn-move {
+      color: var(--primary);
+      border-color: var(--primary-lt);
+    }
+
+    .btn-action.btn-move:hover {
+      background: var(--soon-bg);
+      border-color: var(--primary);
+    }
+
+    .btn-action.btn-delete:hover {
+      background: #FAEAE4;
+      color: #B84030;
+      border-color: #E0B0A8;
+    }
+
+    /* ── Empty state ───────────────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 48px 20px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>my to-do</h1>
+    <nav class="tabs">
+      <button class="tab active" data-tab="today">Today</button>
+      <button class="tab" data-tab="all">All</button>
+    </nav>
+  </header>
+
+  <div class="content">
+
+    <!-- ── TODAY ─────────────────────────────────────────────────────────── -->
+    <section class="section active" id="today-section">
+      <div class="add-form">
+        <input type="text" id="today-input" placeholder="Add to today…" autocomplete="off" />
+        <button class="btn-add" id="today-add-btn" title="Add">+</button>
+      </div>
+      <div class="items-list" id="today-list"></div>
+    </section>
+
+    <!-- ── ALL ───────────────────────────────────────────────────────────── -->
+    <section class="section" id="all-section">
+      <div class="add-form">
+        <input type="text" id="all-input" placeholder="Add a task…" autocomplete="off" />
+        <select class="tag-select" id="all-tag-select" title="Tag">
+          <option value="">No tag</option>
+          <option value="soon">Soon</option>
+          <option value="later">Later</option>
+        </select>
+        <button class="btn-add" id="all-add-btn" title="Add">+</button>
+      </div>
+      <div id="all-container"></div>
+    </section>
+
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────────────────
+    // State & persistence
+    // ─────────────────────────────────────────────────────────────────────────
+    const STORAGE_KEY = 'mytodo_v1';
+
+    function loadState() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { today: [], all: [] }; }
+      catch { return { today: [], all: [] }; }
+    }
+
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function todayMidnight() {
+      const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime();
+    }
+
+    // Load and clean up expired completed items
+    const state = loadState();
+    state.today = state.today.filter(
+      item => !(item.completed && item.completedAt < todayMidnight())
+    );
+    save();
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Tab switching
+    // ─────────────────────────────────────────────────────────────────────────
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + '-section').classList.add('active');
+      });
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TODAY section
+    // ─────────────────────────────────────────────────────────────────────────
+    const todayInput  = document.getElementById('today-input');
+    const todayAddBtn = document.getElementById('today-add-btn');
+    const todayList   = document.getElementById('today-list');
+
+    todayAddBtn.addEventListener('click', addToday);
+    todayInput.addEventListener('keydown', e => { if (e.key === 'Enter') addToday(); });
+
+    function addToday() {
+      const text = todayInput.value.trim();
+      if (!text) return;
+      state.today.push({ id: uid(), text, completed: false, completedAt: null });
+      save();
+      todayInput.value = '';
+      renderToday();
+    }
+
+    function renderToday() {
+      todayList.innerHTML = '';
+      if (!state.today.length) {
+        todayList.innerHTML = '<div class="empty-state">Nothing here yet.<br>A clear plate is a good thing ☀️</div>';
+        return;
+      }
+      state.today.forEach(item => todayList.appendChild(makeTodayItem(item)));
+      attachDrag(todayList, state.today, renderToday);
+    }
+
+    function makeTodayItem(item) {
+      const el = document.createElement('div');
+      el.className = 'item' + (item.completed ? ' completed' : '');
+      el.dataset.id = item.id;
+      el.draggable = true;
+
+      el.innerHTML = `
+        <span class="drag-handle" aria-hidden="true">⠿</span>
+        <div class="item-check${item.completed ? ' checked' : ''}" role="checkbox"
+             aria-checked="${item.completed}" tabindex="0"></div>
+        <span class="item-text">${esc(item.text)}</span>
+        <div class="item-actions">
+          <button class="btn-action btn-move" data-action="move">→ All</button>
+          <button class="btn-action btn-delete" data-action="delete">✕</button>
+        </div>
+      `;
+
+      const check = el.querySelector('.item-check');
+      const toggle = () => {
+        item.completed = !item.completed;
+        item.completedAt = item.completed ? Date.now() : null;
+        save(); renderToday();
+      };
+      check.addEventListener('click', toggle);
+      check.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
+
+      el.querySelector('[data-action="move"]').addEventListener('click', () => {
+        state.today.splice(state.today.indexOf(item), 1);
+        state.all.push({ id: item.id, text: item.text, tag: '' });
+        save(); renderToday(); renderAll();
+      });
+
+      el.querySelector('[data-action="delete"]').addEventListener('click', () => {
+        state.today.splice(state.today.indexOf(item), 1);
+        save(); renderToday();
+      });
+
+      return el;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ALL section
+    // ─────────────────────────────────────────────────────────────────────────
+    const allInput     = document.getElementById('all-input');
+    const allAddBtn    = document.getElementById('all-add-btn');
+    const allTagSelect = document.getElementById('all-tag-select');
+    const allContainer = document.getElementById('all-container');
+
+    allAddBtn.addEventListener('click', addAll);
+    allInput.addEventListener('keydown', e => { if (e.key === 'Enter') addAll(); });
+
+    function addAll() {
+      const text = allInput.value.trim();
+      if (!text) return;
+      state.all.push({ id: uid(), text, tag: allTagSelect.value });
+      save();
+      allInput.value = '';
+      allTagSelect.value = '';
+      renderAll();
+    }
+
+    function renderAll() {
+      allContainer.innerHTML = '';
+      if (!state.all.length) {
+        allContainer.innerHTML = '<div class="empty-state">No tasks yet.<br>Add something you want to get to ✨</div>';
+        return;
+      }
+
+      const groups = [
+        { key: 'soon',  label: 'Soon' },
+        { key: 'later', label: 'Later' },
+        { key: '',      label: 'Untagged' },
+      ];
+
+      groups.forEach(({ key, label }) => {
+        const items = state.all.filter(i => i.tag === key);
+        if (!items.length) return;
+
+        const groupLabel = document.createElement('div');
+        groupLabel.className = 'group-label';
+        groupLabel.textContent = label;
+        allContainer.appendChild(groupLabel);
+
+        const list = document.createElement('div');
+        list.className = 'items-list';
+        allContainer.appendChild(list);
+
+        items.forEach(item => list.appendChild(makeAllItem(item)));
+        attachDrag(list, state.all, renderAll);
+      });
+    }
+
+    function makeAllItem(item) {
+      const tagLabel = item.tag === 'soon' ? 'Soon' : item.tag === 'later' ? 'Later' : '+ tag';
+      const tagClass = item.tag ? `tag-${item.tag}` : 'tag-none';
+
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.dataset.id = item.id;
+      el.draggable = true;
+
+      el.innerHTML = `
+        <span class="drag-handle" aria-hidden="true">⠿</span>
+        <span class="item-text">${esc(item.text)}</span>
+        <button class="item-tag ${tagClass}" data-action="tag" title="Cycle tag">${tagLabel}</button>
+        <div class="item-actions">
+          <button class="btn-action btn-move" data-action="today">→ Today</button>
+          <button class="btn-action btn-delete" data-action="delete">✕</button>
+        </div>
+      `;
+
+      // Cycle tag: '' → 'soon' → 'later' → ''
+      el.querySelector('[data-action="tag"]').addEventListener('click', () => {
+        const cycle = { '': 'soon', 'soon': 'later', 'later': '' };
+        item.tag = cycle[item.tag];
+        save(); renderAll();
+      });
+
+      el.querySelector('[data-action="today"]').addEventListener('click', () => {
+        state.all.splice(state.all.indexOf(item), 1);
+        state.today.push({ id: item.id, text: item.text, completed: false, completedAt: null });
+        save(); renderAll(); renderToday();
+      });
+
+      el.querySelector('[data-action="delete"]').addEventListener('click', () => {
+        state.all.splice(state.all.indexOf(item), 1);
+        save(); renderAll();
+      });
+
+      return el;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Drag-to-reorder
+    // Works on a rendered list; reorders within `masterArray` by id.
+    // ─────────────────────────────────────────────────────────────────────────
+    function attachDrag(listEl, masterArray, rerenderFn) {
+      let dragSrcId = null;
+
+      listEl.querySelectorAll('.item').forEach(el => {
+
+        el.addEventListener('dragstart', e => {
+          dragSrcId = el.dataset.id;
+          el.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', dragSrcId);
+        });
+
+        el.addEventListener('dragend', () => {
+          el.classList.remove('dragging');
+          listEl.querySelectorAll('.item').forEach(i => i.classList.remove('drag-over'));
+        });
+
+        el.addEventListener('dragover', e => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          if (el.dataset.id !== dragSrcId) el.classList.add('drag-over');
+        });
+
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+
+        el.addEventListener('drop', e => {
+          e.preventDefault();
+          el.classList.remove('drag-over');
+          const dstId = el.dataset.id;
+          if (!dragSrcId || dragSrcId === dstId) return;
+
+          const srcIdx = masterArray.findIndex(i => i.id === dragSrcId);
+          const dstIdx = masterArray.findIndex(i => i.id === dstId);
+          if (srcIdx === -1 || dstIdx === -1) return;
+
+          const [moved] = masterArray.splice(srcIdx, 1);
+          masterArray.splice(dstIdx, 0, moved);
+
+          save();
+          rerenderFn();
+        });
+      });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Midnight auto-cleanup (keeps running while the tab is open)
+    // ─────────────────────────────────────────────────────────────────────────
+    function scheduleMidnightCleanup() {
+      const now = new Date();
+      const next = new Date(now);
+      next.setDate(next.getDate() + 1);
+      next.setHours(0, 0, 0, 0);
+
+      setTimeout(() => {
+        state.today = state.today.filter(
+          item => !(item.completed && item.completedAt < todayMidnight())
+        );
+        save();
+        renderToday();
+        scheduleMidnightCleanup(); // reschedule for the next day
+      }, next - now);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Utility
+    // ─────────────────────────────────────────────────────────────────────────
+    function esc(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Init
+    // ─────────────────────────────────────────────────────────────────────────
+    renderToday();
+    renderAll();
+    scheduleMidnightCleanup();
+  </script>
+
+</body>
+</html>
