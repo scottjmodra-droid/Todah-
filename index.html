@@ -263,10 +263,28 @@
     .tag-later  { background: var(--later-bg); color: var(--later-fg); }
     .tag-none   { background: var(--surface-2); color: var(--text-muted); }
 
-    /* ── Action buttons ────────────────────────────────────────────────────── */
+    /* ── Move button (always visible) ─────────────────────────────────────── */
+    .btn-move {
+      background: transparent;
+      border: 1px solid var(--primary-lt);
+      border-radius: 6px;
+      padding: 5px 9px;
+      font-size: 13px;
+      line-height: 1;
+      color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .btn-move:hover, .btn-move:active {
+      background: var(--soon-bg);
+      border-color: var(--primary);
+    }
+
+    /* ── Delete button (hover/tap to reveal) ───────────────────────────────── */
     .item-actions {
       display: flex;
-      gap: 4px;
       flex-shrink: 0;
       opacity: 0;
       transition: opacity 0.15s;
@@ -278,29 +296,12 @@
       background: transparent;
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 11px;
-      font-weight: 600;
+      padding: 5px 8px;
+      font-size: 12px;
       color: var(--text-muted);
       cursor: pointer;
       white-space: nowrap;
       transition: background 0.12s, color 0.12s, border-color 0.12s;
-    }
-
-    .btn-action:hover {
-      background: var(--surface-2);
-      color: var(--text);
-      border-color: var(--text-muted);
-    }
-
-    .btn-action.btn-move {
-      color: var(--primary);
-      border-color: var(--primary-lt);
-    }
-
-    .btn-action.btn-move:hover {
-      background: var(--soon-bg);
-      border-color: var(--primary);
     }
 
     .btn-action.btn-delete:hover {
@@ -322,7 +323,7 @@
 <body>
 
   <header>
-    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.1</span></h1>
+    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.2</span></h1>
     <nav class="tabs">
       <button class="tab active" data-tab="today">Today</button>
       <button class="tab" data-tab="all">All</button>
@@ -436,8 +437,8 @@
         <div class="item-check${item.completed ? ' checked' : ''}" role="checkbox"
              aria-checked="${item.completed}" tabindex="0"></div>
         <span class="item-text">${esc(item.text)}</span>
+        <button class="btn-move" data-action="move" title="Move to All">☰</button>
         <div class="item-actions">
-          <button class="btn-action btn-move" data-action="move">→ All</button>
           <button class="btn-action btn-delete" data-action="delete">✕</button>
         </div>
       `;
@@ -530,8 +531,8 @@
         <span class="drag-handle" aria-hidden="true">⠿</span>
         <span class="item-text">${esc(item.text)}</span>
         <button class="item-tag ${tagClass}" data-action="tag" title="Cycle tag">${tagLabel}</button>
+        <button class="btn-move" data-action="today" title="Move to Today">☀︎</button>
         <div class="item-actions">
-          <button class="btn-action btn-move" data-action="today">→ Today</button>
           <button class="btn-action btn-delete" data-action="delete">✕</button>
         </div>
       `;
