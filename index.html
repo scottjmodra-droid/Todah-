@@ -331,6 +331,30 @@
       min-width: 0;
     }
 
+    /* ── Note items ────────────────────────────────────────────────────────── */
+    .note-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .note-text {
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.45;
+      word-break: break-word;
+      cursor: text;
+    }
+
+    .note-text:hover {
+      text-decoration: underline dotted var(--text-muted);
+    }
+
     /* ── Empty state ───────────────────────────────────────────────────────── */
     .empty-state {
       text-align: center;
@@ -344,10 +368,11 @@
 <body>
 
   <header>
-    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.5</span></h1>
+    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.6</span></h1>
     <nav class="tabs">
       <button class="tab active" data-tab="today">☀︎ Today</button>
       <button class="tab" data-tab="all">∷ All</button>
+      <button class="tab" data-tab="notes">✎ Notes</button>
     </nav>
   </header>
 
@@ -376,6 +401,15 @@
       <div id="all-container"></div>
     </section>
 
+    <!-- ── NOTES ─────────────────────────────────────────────────────────── -->
+    <section class="section" id="notes-section">
+      <div class="add-form">
+        <input type="text" id="notes-input" placeholder="Add a note…" autocomplete="off" />
+        <button class="btn-add" id="notes-add-btn" title="Add">+</button>
+      </div>
+      <div class="items-list" id="notes-list"></div>
+    </section>
+
   </div>
 
   <script>
@@ -385,8 +419,8 @@
     const STORAGE_KEY = 'mytodo_v1';
 
     function loadState() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { today: [], all: [] }; }
-      catch { return { today: [], all: [] }; }
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { today: [], all: [], notes: [] }; }
+      catch { return { today: [], all: [], notes: [] }; }
     }
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
@@ -401,6 +435,7 @@
 
     // Load and clean up expired completed items
     const state = loadState();
+    if (!state.notes) state.notes = []; // migrate older saved state
     state.today = state.today.filter(
       item => !(item.completed && item.completedAt < todayMidnight())
     );
@@ -443,7 +478,12 @@
         todayList.innerHTML = '<div class="empty-state">Nothing here yet.<br>A clear plate is a good thing ☀️</div>';
         return;
       }
-      state.today.forEach(item => todayList.appendChild(makeTodayItem(item)));
+      // Completed items always sink to the bottom
+      const display = [
+        ...state.today.filter(i => !i.completed),
+        ...state.today.filter(i =>  i.completed),
+      ];
+      display.forEach(item => todayList.appendChild(makeTodayItem(item)));
       attachDrag(todayList, state.today, renderToday);
     }
 
@@ -681,6 +721,78 @@
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // NOTES section
+    // ─────────────────────────────────────────────────────────────────────────
+    const notesInput  = document.getElementById('notes-input');
+    const notesAddBtn = document.getElementById('notes-add-btn');
+    const notesList   = document.getElementById('notes-list');
+
+    notesAddBtn.addEventListener('click', addNote);
+    notesInput.addEventListener('keydown', e => { if (e.key === 'Enter') addNote(); });
+
+    function addNote() {
+      const text = notesInput.value.trim();
+      if (!text) return;
+      state.notes.push({ id: uid(), text });
+      save();
+      notesInput.value = '';
+      renderNotes();
+    }
+
+    function renderNotes() {
+      notesList.innerHTML = '';
+      if (!state.notes.length) {
+        notesList.innerHTML = '<div class="empty-state">No notes yet.<br>Jot anything down here ✎</div>';
+        return;
+      }
+      state.notes.forEach(note => notesList.appendChild(makeNoteItem(note)));
+    }
+
+    function makeNoteItem(note) {
+      const el = document.createElement('div');
+      el.className = 'note-item';
+      el.dataset.id = note.id;
+      el.innerHTML = `
+        <span class="note-text">${esc(note.text)}</span>
+        <div class="item-actions">
+          <button class="btn-action btn-delete" data-action="delete">✕</button>
+        </div>
+      `;
+
+      el.querySelector('[data-action="delete"]').addEventListener('click', () => {
+        state.notes.splice(state.notes.indexOf(note), 1);
+        save(); renderNotes();
+      });
+
+      // Tap text to edit inline (reuse same pattern as todo items)
+      const textSpan = el.querySelector('.note-text');
+      textSpan.addEventListener('click', () => {
+        if (textSpan.querySelector('.item-edit-input')) return;
+        const current = note.text;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'item-edit-input';
+        input.value = current;
+        textSpan.textContent = '';
+        textSpan.appendChild(input);
+        input.focus();
+        input.select();
+        function commit() {
+          const val = input.value.trim();
+          if (val && val !== current) { note.text = val; save(); }
+          renderNotes();
+        }
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+          if (e.key === 'Escape') { e.preventDefault(); renderNotes(); }
+        });
+        input.addEventListener('blur', commit);
+      });
+
+      return el;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Midnight auto-cleanup (keeps running while the tab is open)
     // ─────────────────────────────────────────────────────────────────────────
     function scheduleMidnightCleanup() {
@@ -750,6 +862,7 @@
     // ─────────────────────────────────────────────────────────────────────────
     renderToday();
     renderAll();
+    renderNotes();
     scheduleMidnightCleanup();
   </script>
 
