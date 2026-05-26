@@ -284,15 +284,11 @@
       border-color: var(--primary);
     }
 
-    /* ── Delete button (hover/tap to reveal) ───────────────────────────────── */
+    /* ── Delete button (always visible) ───────────────────────────────────── */
     .item-actions {
       display: flex;
       flex-shrink: 0;
-      opacity: 0;
-      transition: opacity 0.15s;
     }
-
-    .item:hover .item-actions { opacity: 1; }
 
     .btn-action {
       background: transparent;
@@ -306,10 +302,33 @@
       transition: background 0.12s, color 0.12s, border-color 0.12s;
     }
 
-    .btn-action.btn-delete:hover {
+    .btn-action.btn-delete:hover,
+    .btn-action.btn-delete:active {
       background: #FAEAE4;
       color: #B84030;
       border-color: #E0B0A8;
+    }
+
+    /* ── Inline edit input ─────────────────────────────────────────────────── */
+    .item-text {
+      cursor: text;
+    }
+
+    .item-text:hover {
+      text-decoration: underline dotted var(--text-muted);
+    }
+
+    .item-edit-input {
+      flex: 1;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      border: 1.5px solid var(--primary);
+      border-radius: 6px;
+      padding: 2px 7px;
+      outline: none;
+      min-width: 0;
     }
 
     /* ── Empty state ───────────────────────────────────────────────────────── */
@@ -325,7 +344,7 @@
 <body>
 
   <header>
-    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.4</span></h1>
+    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.5</span></h1>
     <nav class="tabs">
       <button class="tab active" data-tab="today">☀︎ Today</button>
       <button class="tab" data-tab="all">∷ All</button>
@@ -463,6 +482,8 @@
         save(); renderToday();
       });
 
+      makeEditable(el.querySelector('.item-text'), item, renderToday);
+
       return el;
     }
 
@@ -552,6 +573,8 @@
         state.all.splice(state.all.indexOf(item), 1);
         save(); renderAll();
       });
+
+      makeEditable(el.querySelector('.item-text'), item, renderAll);
 
       return el;
     }
@@ -674,6 +697,45 @@
         renderToday();
         scheduleMidnightCleanup(); // reschedule for the next day
       }, next - now);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Inline edit — tap the text to edit it
+    // ─────────────────────────────────────────────────────────────────────────
+    function makeEditable(textSpan, item, rerenderFn) {
+      textSpan.addEventListener('click', () => {
+        // Already editing? bail.
+        if (textSpan.querySelector('.item-edit-input')) return;
+
+        const current = item.text;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'item-edit-input';
+        input.value = current;
+
+        // Swap span content for input
+        textSpan.textContent = '';
+        textSpan.appendChild(input);
+        input.focus();
+        input.select();
+
+        function commit() {
+          const val = input.value.trim();
+          if (val && val !== current) {
+            item.text = val;
+            save();
+          }
+          rerenderFn();
+        }
+
+        function cancel() { rerenderFn(); }
+
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+          if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+        });
+        input.addEventListener('blur', commit);
+      });
     }
 
     // ─────────────────────────────────────────────────────────────────────────
