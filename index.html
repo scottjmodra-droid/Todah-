@@ -188,18 +188,34 @@
     }
 
     /* ── Drag handle ───────────────────────────────────────────────────────── */
-    .drag-handle {
-      font-size: 15px;
-      color: var(--text-muted);
-      opacity: 0.45;
-      cursor: grab;
+    .reorder-btns {
+      display: flex;
+      flex-direction: column;
       flex-shrink: 0;
-      line-height: 1;
-      touch-action: none; /* prevents scroll hijacking on mobile */
-      padding: 4px 2px;   /* larger tap target */
+      gap: 1px;
     }
 
-    .drag-handle:active { cursor: grabbing; }
+    .btn-reorder {
+      background: transparent;
+      border: none;
+      padding: 1px 5px;
+      font-size: 11px;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.12s, color 0.12s;
+    }
+
+    .btn-reorder:hover, .btn-reorder:active {
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .btn-reorder:disabled {
+      opacity: 0.15;
+      cursor: default;
+    }
 
     /* ── Checkbox ──────────────────────────────────────────────────────────── */
     .item-check {
@@ -368,7 +384,7 @@
 <body>
 
   <header>
-    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.6</span></h1>
+    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.7</span></h1>
     <nav class="tabs">
       <button class="tab active" data-tab="today">☀︎ Today</button>
       <button class="tab" data-tab="all">∷ All</button>
@@ -484,15 +500,22 @@
         ...state.today.filter(i =>  i.completed),
       ];
       display.forEach(item => todayList.appendChild(makeTodayItem(item)));
-      attachDrag(todayList, state.today, renderToday);
     }
 
     function makeTodayItem(item) {
+      const active   = state.today.filter(i => !i.completed);
+      const idx      = active.indexOf(item); // -1 if completed
+      const isFirst  = idx === 0;
+      const isLast   = idx === active.length - 1 || item.completed;
+
       const el = document.createElement('div');
       el.className = 'item' + (item.completed ? ' completed' : '');
       el.dataset.id = item.id;
       el.innerHTML = `
-        <span class="drag-handle" aria-hidden="true">⠿</span>
+        <div class="reorder-btns">
+          <button class="btn-reorder" data-action="up"   title="Move up"   ${item.completed || isFirst ? 'disabled' : ''}>▲</button>
+          <button class="btn-reorder" data-action="down" title="Move down" ${item.completed || isLast  ? 'disabled' : ''}>▼</button>
+        </div>
         <div class="item-check${item.completed ? ' checked' : ''}" role="checkbox"
              aria-checked="${item.completed}" tabindex="0"></div>
         <span class="item-text">${esc(item.text)}</span>
@@ -510,6 +533,13 @@
       };
       check.addEventListener('click', toggle);
       check.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
+
+      el.querySelector('[data-action="up"]').addEventListener('click', () => {
+        swapInArray(state.today, item, -1); save(); renderToday();
+      });
+      el.querySelector('[data-action="down"]').addEventListener('click', () => {
+        swapInArray(state.today, item, +1); save(); renderToday();
+      });
 
       el.querySelector('[data-action="move"]').addEventListener('click', () => {
         state.today.splice(state.today.indexOf(item), 1);
@@ -575,19 +605,23 @@
         allContainer.appendChild(list);
 
         items.forEach(item => list.appendChild(makeAllItem(item)));
-        attachDrag(list, state.all, renderAll);
       });
     }
 
     function makeAllItem(item) {
       const tagLabel = item.tag === 'soon' ? 'Soon' : item.tag === 'later' ? 'Later' : '+ tag';
       const tagClass = item.tag ? `tag-${item.tag}` : 'tag-none';
+      const group    = state.all.filter(i => i.tag === item.tag);
+      const gIdx     = group.indexOf(item);
 
       const el = document.createElement('div');
       el.className = 'item';
       el.dataset.id = item.id;
       el.innerHTML = `
-        <span class="drag-handle" aria-hidden="true">⠿</span>
+        <div class="reorder-btns">
+          <button class="btn-reorder" data-action="up"   title="Move up"   ${gIdx === 0                ? 'disabled' : ''}>▲</button>
+          <button class="btn-reorder" data-action="down" title="Move down" ${gIdx === group.length - 1 ? 'disabled' : ''}>▼</button>
+        </div>
         <span class="item-text">${esc(item.text)}</span>
         <button class="item-tag ${tagClass}" data-action="tag" title="Cycle tag">${tagLabel}</button>
         <button class="btn-move" data-action="today" title="Move to Today">☀︎</button>
@@ -595,6 +629,13 @@
           <button class="btn-action btn-delete" data-action="delete">✕</button>
         </div>
       `;
+
+      el.querySelector('[data-action="up"]').addEventListener('click', () => {
+        swapInArray(state.all, item, -1); save(); renderAll();
+      });
+      el.querySelector('[data-action="down"]').addEventListener('click', () => {
+        swapInArray(state.all, item, +1); save(); renderAll();
+      });
 
       // Cycle tag: '' → 'soon' → 'later' → ''
       el.querySelector('[data-action="tag"]').addEventListener('click', () => {
@@ -620,104 +661,13 @@
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Drag-to-reorder (pointer events — works on touch & mouse)
+    // Reorder helper — swap item with its neighbour in an array
     // ─────────────────────────────────────────────────────────────────────────
-    function attachDrag(listEl, masterArray, rerenderFn) {
-
-      listEl.querySelectorAll('.drag-handle').forEach(handle => {
-        handle.addEventListener('pointerdown', startDrag);
-      });
-
-      function startDrag(e) {
-        e.preventDefault();
-        const dragEl = e.currentTarget.closest('.item');
-        if (!dragEl) return;
-
-        const rect = dragEl.getBoundingClientRect();
-        const offsetY = e.clientY - rect.top;
-        const offsetX = e.clientX - rect.left;
-
-        // Floating clone that follows the pointer
-        const clone = dragEl.cloneNode(true);
-        Object.assign(clone.style, {
-          position:      'fixed',
-          top:           rect.top + 'px',
-          left:          rect.left + 'px',
-          width:         rect.width + 'px',
-          margin:        '0',
-          zIndex:        '999',
-          opacity:       '0.92',
-          pointerEvents: 'none',
-          boxShadow:     '0 10px 30px rgba(60,42,30,0.25)',
-          transform:     'rotate(1.5deg) scale(1.03)',
-        });
-        document.body.appendChild(clone);
-
-        // Placeholder slot
-        const placeholder = document.createElement('div');
-        Object.assign(placeholder.style, {
-          height:       rect.height + 'px',
-          border:       '2px dashed #E8C4A0',
-          borderRadius: '10px',
-          background:   '#FAEBDF',
-          opacity:      '0.7',
-          flexShrink:   '0',
-        });
-        dragEl.after(placeholder);
-        dragEl.style.opacity = '0';
-        dragEl.style.pointerEvents = 'none';
-
-        function onMove(e) {
-          clone.style.top  = (e.clientY - offsetY) + 'px';
-          clone.style.left = (e.clientX - offsetX) + 'px';
-
-          // Find item under the pointer (hide clone so it doesn't block hit-test)
-          clone.style.visibility = 'hidden';
-          const elBelow = document.elementFromPoint(e.clientX, e.clientY);
-          clone.style.visibility = '';
-
-          if (!elBelow) return;
-          const target = elBelow.closest('.item');
-          if (!target || target === dragEl || target.closest('.items-list') !== listEl) return;
-
-          const mid = target.getBoundingClientRect().top + target.getBoundingClientRect().height / 2;
-          if (e.clientY < mid) {
-            listEl.insertBefore(placeholder, target);
-          } else {
-            target.after(placeholder);
-          }
-        }
-
-        function onUp() {
-          cleanup();
-
-          // Derive new order from the DOM, then sync into masterArray
-          const newIds = Array.from(listEl.querySelectorAll('.item')).map(el => el.dataset.id);
-          const idSet  = new Set(newIds);
-          const sorted = newIds.map(id => masterArray.find(i => i.id === id)).filter(Boolean);
-          let si = 0;
-          for (let i = 0; i < masterArray.length; i++) {
-            if (idSet.has(masterArray[i].id)) masterArray[i] = sorted[si++];
-          }
-
-          save();
-          rerenderFn();
-        }
-
-        function cleanup() {
-          clone.remove();
-          placeholder.remove();
-          dragEl.style.opacity = '';
-          dragEl.style.pointerEvents = '';
-          document.removeEventListener('pointermove', onMove);
-          document.removeEventListener('pointerup',   onUp);
-          document.removeEventListener('pointercancel', cleanup);
-        }
-
-        document.addEventListener('pointermove',   onMove);
-        document.addEventListener('pointerup',     onUp);
-        document.addEventListener('pointercancel', cleanup);
-      }
+    function swapInArray(arr, item, direction) {
+      const idx = arr.indexOf(item);
+      const next = idx + direction;
+      if (next < 0 || next >= arr.length) return;
+      [arr[idx], arr[next]] = [arr[next], arr[idx]];
     }
 
     // ─────────────────────────────────────────────────────────────────────────
