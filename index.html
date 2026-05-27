@@ -177,45 +177,25 @@
 
     .item:active { cursor: grabbing; }
 
-    .item.dragging {
-      opacity: 0.35;
-      box-shadow: none;
-    }
-
-    .item.drag-over {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px var(--primary-lt);
+    .item.drag-source {
+      opacity: 0;
+      pointer-events: none;
     }
 
     /* ── Drag handle ───────────────────────────────────────────────────────── */
-    .reorder-btns {
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      gap: 1px;
-    }
-
-    .btn-reorder {
-      background: transparent;
-      border: none;
-      padding: 1px 5px;
-      font-size: 11px;
-      line-height: 1;
+    .drag-handle {
+      font-size: 16px;
       color: var(--text-muted);
-      cursor: pointer;
-      opacity: 0.5;
-      transition: opacity 0.12s, color 0.12s;
+      opacity: 0.4;
+      cursor: grab;
+      flex-shrink: 0;
+      line-height: 1;
+      padding: 4px 4px;
+      touch-action: none;
+      user-select: none;
     }
 
-    .btn-reorder:hover, .btn-reorder:active {
-      opacity: 1;
-      color: var(--primary);
-    }
-
-    .btn-reorder:disabled {
-      opacity: 0.15;
-      cursor: default;
-    }
+    .drag-handle:active { cursor: grabbing; opacity: 0.8; }
 
     /* ── Checkbox ──────────────────────────────────────────────────────────── */
     .item-check {
@@ -384,7 +364,7 @@
 <body>
 
   <header>
-    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.7</span></h1>
+    <h1>my to-do <span style="font-size:11px;font-weight:400;opacity:0.45;letter-spacing:0;">v1.8</span></h1>
     <nav class="tabs">
       <button class="tab active" data-tab="today">☀︎ Today</button>
       <button class="tab" data-tab="all">∷ All</button>
@@ -500,22 +480,15 @@
         ...state.today.filter(i =>  i.completed),
       ];
       display.forEach(item => todayList.appendChild(makeTodayItem(item)));
+      attachDrag(todayList, state.today, renderToday);
     }
 
     function makeTodayItem(item) {
-      const active   = state.today.filter(i => !i.completed);
-      const idx      = active.indexOf(item); // -1 if completed
-      const isFirst  = idx === 0;
-      const isLast   = idx === active.length - 1 || item.completed;
-
       const el = document.createElement('div');
       el.className = 'item' + (item.completed ? ' completed' : '');
       el.dataset.id = item.id;
       el.innerHTML = `
-        <div class="reorder-btns">
-          <button class="btn-reorder" data-action="up"   title="Move up"   ${item.completed || isFirst ? 'disabled' : ''}>▲</button>
-          <button class="btn-reorder" data-action="down" title="Move down" ${item.completed || isLast  ? 'disabled' : ''}>▼</button>
-        </div>
+        <span class="drag-handle" aria-hidden="true">⠿</span>
         <div class="item-check${item.completed ? ' checked' : ''}" role="checkbox"
              aria-checked="${item.completed}" tabindex="0"></div>
         <span class="item-text">${esc(item.text)}</span>
@@ -533,13 +506,6 @@
       };
       check.addEventListener('click', toggle);
       check.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
-
-      el.querySelector('[data-action="up"]').addEventListener('click', () => {
-        swapInArray(state.today, item, -1); save(); renderToday();
-      });
-      el.querySelector('[data-action="down"]').addEventListener('click', () => {
-        swapInArray(state.today, item, +1); save(); renderToday();
-      });
 
       el.querySelector('[data-action="move"]').addEventListener('click', () => {
         state.today.splice(state.today.indexOf(item), 1);
@@ -605,23 +571,19 @@
         allContainer.appendChild(list);
 
         items.forEach(item => list.appendChild(makeAllItem(item)));
+        attachDrag(list, state.all, renderAll);
       });
     }
 
     function makeAllItem(item) {
       const tagLabel = item.tag === 'soon' ? 'Soon' : item.tag === 'later' ? 'Later' : '+ tag';
       const tagClass = item.tag ? `tag-${item.tag}` : 'tag-none';
-      const group    = state.all.filter(i => i.tag === item.tag);
-      const gIdx     = group.indexOf(item);
 
       const el = document.createElement('div');
       el.className = 'item';
       el.dataset.id = item.id;
       el.innerHTML = `
-        <div class="reorder-btns">
-          <button class="btn-reorder" data-action="up"   title="Move up"   ${gIdx === 0                ? 'disabled' : ''}>▲</button>
-          <button class="btn-reorder" data-action="down" title="Move down" ${gIdx === group.length - 1 ? 'disabled' : ''}>▼</button>
-        </div>
+        <span class="drag-handle" aria-hidden="true">⠿</span>
         <span class="item-text">${esc(item.text)}</span>
         <button class="item-tag ${tagClass}" data-action="tag" title="Cycle tag">${tagLabel}</button>
         <button class="btn-move" data-action="today" title="Move to Today">☀︎</button>
@@ -629,13 +591,6 @@
           <button class="btn-action btn-delete" data-action="delete">✕</button>
         </div>
       `;
-
-      el.querySelector('[data-action="up"]').addEventListener('click', () => {
-        swapInArray(state.all, item, -1); save(); renderAll();
-      });
-      el.querySelector('[data-action="down"]').addEventListener('click', () => {
-        swapInArray(state.all, item, +1); save(); renderAll();
-      });
 
       // Cycle tag: '' → 'soon' → 'later' → ''
       el.querySelector('[data-action="tag"]').addEventListener('click', () => {
@@ -661,13 +616,107 @@
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Reorder helper — swap item with its neighbour in an array
+    // Drag-to-reorder
+    // Uses separate touch/mouse events (more reliable than pointer events on iOS).
+    // Hit detection uses bounding rects — no elementFromPoint trickery.
     // ─────────────────────────────────────────────────────────────────────────
-    function swapInArray(arr, item, direction) {
-      const idx = arr.indexOf(item);
-      const next = idx + direction;
-      if (next < 0 || next >= arr.length) return;
-      [arr[idx], arr[next]] = [arr[next], arr[idx]];
+    function attachDrag(listEl, masterArray, rerenderFn) {
+      listEl.querySelectorAll('.drag-handle').forEach(handle => {
+        handle.addEventListener('mousedown',  e => startDrag(e, e.clientX, e.clientY));
+        handle.addEventListener('touchstart', e => {
+          const t = e.touches[0];
+          startDrag(e, t.clientX, t.clientY);
+        }, { passive: false });
+      });
+
+      function startDrag(e, startX, startY) {
+        e.preventDefault();
+        const dragEl = e.currentTarget.closest('.item');
+        if (!dragEl) return;
+
+        const rect    = dragEl.getBoundingClientRect();
+        const offsetY = startY - rect.top;
+        const offsetX = startX - rect.left;
+
+        // Floating clone
+        const clone = dragEl.cloneNode(true);
+        Object.assign(clone.style, {
+          position:      'fixed',
+          top:           rect.top  + 'px',
+          left:          rect.left + 'px',
+          width:         rect.width + 'px',
+          margin:        '0',
+          zIndex:        '1000',
+          opacity:       '0.9',
+          pointerEvents: 'none',
+          boxShadow:     '0 10px 28px rgba(60,42,30,0.22)',
+          transform:     'rotate(1.5deg) scale(1.02)',
+        });
+        document.body.appendChild(clone);
+
+        // Placeholder
+        const ph = document.createElement('div');
+        ph.className = 'drag-placeholder';
+        ph.style.cssText = `height:${rect.height}px;border:2px dashed #E8C4A0;border-radius:10px;background:#FAEBDF;opacity:0.6;flex-shrink:0;`;
+        dragEl.classList.add('drag-source');
+        dragEl.after(ph);
+
+        function move(cy, cx) {
+          clone.style.top  = (cy - offsetY) + 'px';
+          clone.style.left = (cx - offsetX) + 'px';
+
+          // Find drop position by comparing cy to each visible item's midpoint
+          const siblings = Array.from(listEl.querySelectorAll('.item:not(.drag-source)'));
+          let placed = false;
+          for (const sib of siblings) {
+            const r   = sib.getBoundingClientRect();
+            const mid = r.top + r.height / 2;
+            if (cy < mid) {
+              listEl.insertBefore(ph, sib);
+              placed = true;
+              break;
+            }
+          }
+          if (!placed) listEl.appendChild(ph);
+        }
+
+        function finish() {
+          // Place original item where the placeholder is, then clean up
+          ph.replaceWith(dragEl);
+          dragEl.classList.remove('drag-source');
+          clone.remove();
+
+          // Sync masterArray order from DOM
+          const newIds   = Array.from(listEl.querySelectorAll('.item')).map(el => el.dataset.id);
+          const idSet    = new Set(newIds);
+          const reordered = newIds.map(id => masterArray.find(i => i.id === id)).filter(Boolean);
+          let ri = 0;
+          for (let i = 0; i < masterArray.length; i++) {
+            if (idSet.has(masterArray[i].id)) masterArray[i] = reordered[ri++];
+          }
+          save();
+          rerenderFn();
+
+          document.removeEventListener('mousemove',  onMouseMove);
+          document.removeEventListener('mouseup',    finish);
+          document.removeEventListener('touchmove',  onTouchMove);
+          document.removeEventListener('touchend',   finish);
+          document.removeEventListener('touchcancel',finish);
+        }
+
+        function onMouseMove(e) { move(e.clientY, e.clientX); }
+        function onTouchMove(e) {
+          e.preventDefault();
+          const t = e.touches[0];
+          move(t.clientY, t.clientX);
+        }
+
+        document.addEventListener('mousemove',   onMouseMove);
+        document.addEventListener('mouseup',     finish);
+        document.addEventListener('touchmove',   onTouchMove,  { passive: false });
+        document.addEventListener('touchend',    finish);
+        document.addEventListener('touchcancel', finish);
+      }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
