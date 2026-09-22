@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ToDo</title>
+  <link rel="apple-touch-icon" id="app-icon" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="ToDo" />
   <style>
     /* ── Themes ──────────────────────────────────────────────────────────────── */
     :root[data-theme="light"] {
@@ -641,7 +644,7 @@
     save();
 
     // ── Theme ───────────────────────────────────────────────────────────────
-    const savedTheme = localStorage.getItem('mytodo_theme') || 'dark';
+    const savedTheme = localStorage.getItem('mytodo_theme') || 'light';
     applyTheme(savedTheme);
 
     function applyTheme(t) {
@@ -1088,8 +1091,61 @@
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
+    // ── App icon (home screen) ───────────────────────────────────────────────
+    function generateAppIcon() {
+      const S = 180, bw = 72, bh = 48, r = 9;
+      const lx = (S - bw * 2) / 2, ly = (S - bh) / 2;
+      const dx = lx + bw;
+      const canvas = document.createElement('canvas');
+      canvas.width = S; canvas.height = S;
+      const c = canvas.getContext('2d');
+
+      // Background
+      c.fillStyle = '#FAF6F0';
+      c.fillRect(0, 0, S, S);
+
+      // "To" block — rounded left corners
+      c.beginPath();
+      c.moveTo(lx + r, ly);
+      c.lineTo(dx, ly);
+      c.lineTo(dx, ly + bh);
+      c.lineTo(lx + r, ly + bh);
+      c.quadraticCurveTo(lx, ly + bh, lx, ly + bh - r);
+      c.lineTo(lx, ly + r);
+      c.quadraticCurveTo(lx, ly, lx + r, ly);
+      c.closePath();
+      c.fillStyle = '#B8622A';
+      c.fill();
+
+      // "Do" block — rounded right corners + border
+      c.beginPath();
+      c.moveTo(dx, ly);
+      c.lineTo(dx + bw - r, ly);
+      c.quadraticCurveTo(dx + bw, ly, dx + bw, ly + r);
+      c.lineTo(dx + bw, ly + bh - r);
+      c.quadraticCurveTo(dx + bw, ly + bh, dx + bw - r, ly + bh);
+      c.lineTo(dx, ly + bh);
+      c.closePath();
+      c.fillStyle = '#FFFFFF';
+      c.fill();
+      c.strokeStyle = '#B8622A';
+      c.lineWidth = 3;
+      c.stroke();
+
+      // Text
+      c.font = '800 22px -apple-system, BlinkMacSystemFont, sans-serif';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillStyle = '#FFFFFF';
+      c.fillText('To', lx + bw / 2, ly + bh / 2);
+      c.fillStyle = '#B8622A';
+      c.fillText('Do', dx + bw / 2, ly + bh / 2);
+
+      document.getElementById('app-icon').href = canvas.toDataURL('image/png');
+    }
+
     // ── Init ─────────────────────────────────────────────────────────────────
-    renderWeek(); renderAll(); renderNotes(); scheduleMidnightCleanup();
+    renderWeek(); renderAll(); renderNotes(); scheduleMidnightCleanup(); generateAppIcon();
   </script>
 </body>
 </html>
