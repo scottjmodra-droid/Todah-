@@ -8,58 +8,58 @@
   <link rel="manifest" id="app-manifest" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ToDo" />
-  <meta name="theme-color" content="#B8622A" />
+  <meta name="theme-color" content="#FFD60A" />
   <style>
     /* ── Themes ──────────────────────────────────────────────────────────────── */
     :root[data-theme="light"] {
-      --bg:         #FAF6F0;
-      --surface:    #F2E9DE;
-      --surface-2:  #E8DDD0;
-      --border:     #DDD0BF;
-      --primary:    #B8622A;
-      --primary-lt: #E8C4A0;
-      --text:       #3C2A1E;
-      --text-muted: #9C7E6A;
-      --completed:  #C4B0A0;
-      --soon-bg:    #FAEBDF;
-      --soon-fg:    #B8622A;
-      --later-bg:   #EDE8DE;
-      --later-fg:   #7A7258;
-      --day-bg:     #E5EEF7;
-      --day-fg:     #3A5080;
-      --logo-a-bg:  #B8622A;
-      --logo-a-txt: #FFFFFF;
+      --bg:         #FFFEF4;
+      --surface:    #FFFFFF;
+      --surface-2:  #F2F2F7;
+      --border:     #E5E5EA;
+      --primary:    #C8960A;
+      --primary-lt: #FFF3CC;
+      --text:       #1C1C1E;
+      --text-muted: #8E8E93;
+      --completed:  #C7C7CC;
+      --soon-bg:    #FFF8DC;
+      --soon-fg:    #A07800;
+      --later-bg:   #F2F2F7;
+      --later-fg:   #6C6C70;
+      --day-bg:     #E8F4FD;
+      --day-fg:     #0071E3;
+      --logo-a-bg:  #FFD60A;
+      --logo-a-txt: #1C1C1E;
       --logo-b-bg:  #FFFFFF;
-      --logo-b-txt: #B8622A;
-      --logo-b-bdr: #B8622A;
-      --settings-bg:#F2E9DE;
-      --btn-del-hbg:#FAEAE4;
-      --btn-del-hfg:#B84030;
+      --logo-b-txt: #1C1C1E;
+      --logo-b-bdr: #1C1C1E;
+      --settings-bg:#FFFFFF;
+      --btn-del-hbg:#FFF0F0;
+      --btn-del-hfg:#FF3B30;
     }
     :root[data-theme="dark"] {
-      --bg:         #1E1714;
-      --surface:    #2A1E18;
-      --surface-2:  #382820;
-      --border:     #4A3028;
-      --primary:    #E07840;
-      --primary-lt: #5A2810;
-      --text:       #F5EDE8;
-      --text-muted: #907060;
-      --completed:  #604840;
-      --soon-bg:    #3A2010;
-      --soon-fg:    #E89060;
-      --later-bg:   #28201A;
-      --later-fg:   #908060;
-      --day-bg:     #182030;
-      --day-fg:     #60A8C8;
-      --logo-a-bg:  #E07840;
-      --logo-a-txt: #1E1714;
-      --logo-b-bg:  #1E1714;
-      --logo-b-txt: #E07840;
-      --logo-b-bdr: #E07840;
-      --settings-bg:#2A1E18;
-      --btn-del-hbg:#3A1810;
-      --btn-del-hfg:#FF7060;
+      --bg:         #1C1C1E;
+      --surface:    #2C2C2E;
+      --surface-2:  #3A3A3C;
+      --border:     #48484A;
+      --primary:    #FFD60A;
+      --primary-lt: #3A3200;
+      --text:       #FFFFFF;
+      --text-muted: #8E8E93;
+      --completed:  #48484A;
+      --soon-bg:    #3A3200;
+      --soon-fg:    #FFD60A;
+      --later-bg:   #2C2C2E;
+      --later-fg:   #8E8E93;
+      --day-bg:     #0A2840;
+      --day-fg:     #0A84FF;
+      --logo-a-bg:  #FFD60A;
+      --logo-a-txt: #1C1C1E;
+      --logo-b-bg:  #1C1C1E;
+      --logo-b-txt: #FFD60A;
+      --logo-b-bdr: #FFD60A;
+      --settings-bg:#2C2C2E;
+      --btn-del-hbg:#3A1515;
+      --btn-del-hfg:#FF453A;
     }
 
     /* ── Reset ───────────────────────────────────────────────────────────────── */
@@ -549,7 +549,7 @@
     <div class="header-top">
       <div class="logo">
         <span class="logo-to">To</span><span class="logo-do">Do</span>
-        <span class="logo-ver">v2.2</span>
+        <span class="logo-ver">v2.3</span>
       </div>
       <button class="settings-btn" id="settings-btn" title="Settings">⚙︎</button>
     </div>
@@ -1117,7 +1117,7 @@
       c.lineTo(lx, ty + r);
       c.quadraticCurveTo(lx, ty, lx + r, ty);
       c.closePath();
-      c.fillStyle = '#B8622A';
+      c.fillStyle = '#FFD60A';
       c.fill();
 
       // "Do" block — rounded bottom corners + border
@@ -1131,7 +1131,7 @@
       c.closePath();
       c.fillStyle = '#FFFFFF';
       c.fill();
-      c.strokeStyle = '#B8622A';
+      c.strokeStyle = '#1C1C1E';
       c.lineWidth = 3;
       c.stroke();
 
@@ -1139,9 +1139,9 @@
       c.font = 'bold 28px BlinkMacSystemFont, Arial, sans-serif';
       c.textAlign = 'center';
       c.textBaseline = 'middle';
-      c.fillStyle = '#FFFFFF';
+      c.fillStyle = '#1C1C1E';
       c.fillText('To', S / 2, ty + bh / 2);
-      c.fillStyle = '#B8622A';
+      c.fillStyle = '#1C1C1E';
       c.fillText('Do', S / 2, dy + bh / 2);
 
       const iconUrl = canvas.toDataURL('image/png');
