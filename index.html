@@ -1,30 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ToDo</title>
   <style>
-    :root {
-      --bg:         #FAF6F0;
-      --surface:    #F2E9DE;
-      --surface-2:  #E8DDD0;
-      --border:     #DDD0BF;
-      --primary:    #B8622A;
-      --primary-lt: #E8C4A0;
-      --text:       #3C2A1E;
-      --text-muted: #9C7E6A;
-      --completed:  #C4B0A0;
-      --soon-bg:    #FAEBDF;
-      --soon-fg:    #B8622A;
-      --later-bg:   #EDE8DE;
-      --later-fg:   #7A7258;
-      --day-bg:     #E8EEF8;
-      --day-fg:     #3A5080;
-      --radius:     10px;
-      --shadow:     0 2px 10px rgba(60,42,30,0.09);
+    /* ── Themes ──────────────────────────────────────────────────────────────── */
+    :root[data-theme="dark"] {
+      --bg:         #1C1C1E;
+      --surface:    #2C2C2E;
+      --surface-2:  #3A3A3C;
+      --border:     #48484A;
+      --primary:    #F0A020;
+      --primary-lt: #5A3A10;
+      --text:       #F2F2F7;
+      --text-muted: #8E8E93;
+      --completed:  #5E5E60;
+      --soon-bg:    #3A2E10;
+      --soon-fg:    #F5BC50;
+      --later-bg:   #2A2A30;
+      --later-fg:   #A0A090;
+      --day-bg:     #1A2E3A;
+      --day-fg:     #60B8D8;
+      --logo-a-bg:  #F0A020;
+      --logo-a-txt: #1C1C1E;
+      --logo-b-bg:  #1C1C1E;
+      --logo-b-txt: #F0A020;
+      --logo-b-bdr: #F0A020;
+      --settings-bg:#2C2C2E;
+      --btn-del-hbg:#3A1A1A;
+      --btn-del-hfg:#FF6B60;
+    }
+    :root[data-theme="light"] {
+      --bg:         #FAFAF6;
+      --surface:    #F3F1E6;
+      --surface-2:  #E9E6D6;
+      --border:     #D8D3BE;
+      --primary:    #C07818;
+      --primary-lt: #F0D090;
+      --text:       #2C2818;
+      --text-muted: #8A8060;
+      --completed:  #C0B090;
+      --soon-bg:    #FDF4DC;
+      --soon-fg:    #9A6010;
+      --later-bg:   #EEEADC;
+      --later-fg:   #7A7055;
+      --day-bg:     #E0EEF5;
+      --day-fg:     #2A6080;
+      --logo-a-bg:  #C07818;
+      --logo-a-txt: #FFFFFF;
+      --logo-b-bg:  #FFFFFF;
+      --logo-b-txt: #C07818;
+      --logo-b-bdr: #C07818;
+      --settings-bg:#F3F1E6;
+      --btn-del-hbg:#FAEAE4;
+      --btn-del-hfg:#B84030;
     }
 
+    /* ── Reset ───────────────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -32,59 +65,151 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      transition: background 0.2s, color 0.2s;
     }
 
     /* ── Header ──────────────────────────────────────────────────────────────── */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 18px 20px 0;
+      padding: 14px 16px 0;
       position: sticky;
       top: 0;
       z-index: 20;
     }
 
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    /* ── Logo ────────────────────────────────────────────────────────────────── */
     .logo {
       display: inline-flex;
       align-items: baseline;
-      gap: 0;
-      margin-bottom: 14px;
       user-select: none;
     }
-
     .logo-to {
-      background: #1A1A1A;
-      color: #FFFFFF;
-      font-size: 17px;
+      background: var(--logo-a-bg);
+      color: var(--logo-a-txt);
+      font-size: 16px;
       font-weight: 800;
       letter-spacing: -0.5px;
-      padding: 3px 7px 3px 8px;
+      padding: 3px 6px 3px 8px;
       border-radius: 6px 0 0 6px;
     }
-
     .logo-do {
-      background: #FFFFFF;
-      color: #1A1A1A;
-      font-size: 17px;
+      background: var(--logo-b-bg);
+      color: var(--logo-b-txt);
+      font-size: 16px;
       font-weight: 800;
       letter-spacing: -0.5px;
-      padding: 3px 8px 3px 7px;
+      padding: 3px 8px 3px 6px;
       border-radius: 0 6px 6px 0;
-      border: 2px solid #1A1A1A;
+      border: 2px solid var(--logo-b-bdr);
       border-left: none;
     }
-
     .logo-ver {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 400;
       color: var(--text-muted);
-      margin-left: 8px;
+      margin-left: 7px;
       opacity: 0.6;
     }
 
+    /* ── Settings button ─────────────────────────────────────────────────────── */
+    .settings-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 17px;
+      color: var(--text-muted);
+      transition: color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .settings-btn:hover { color: var(--primary); background: var(--surface); }
+    .settings-btn.open   { color: var(--primary); }
+
+    /* ── Settings panel ──────────────────────────────────────────────────────── */
+    .settings-panel {
+      position: fixed;
+      top: 58px;
+      right: 12px;
+      background: var(--settings-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+      z-index: 200;
+      min-width: 200px;
+      overflow: hidden;
+      display: none;
+    }
+    .settings-panel.open { display: block; }
+
+    .settings-section {
+      padding: 12px 14px 10px;
+    }
+    .settings-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .theme-row {
+      display: flex;
+      gap: 6px;
+    }
+    .theme-btn {
+      flex: 1;
+      padding: 7px 6px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface-2);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .theme-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--logo-a-txt);
+    }
+    .settings-divider {
+      height: 1px;
+      background: var(--border);
+    }
+    .settings-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.1s;
+      text-align: left;
+    }
+    .settings-item:hover { background: var(--surface-2); }
+    .settings-item + .settings-item { border-top: 1px solid var(--border); }
+
     /* ── Tabs ────────────────────────────────────────────────────────────────── */
     .tabs { display: flex; gap: 2px; }
-
     .tab {
       padding: 8px 16px 9px;
       font-size: 12px;
@@ -98,9 +223,7 @@
       transition: color 0.15s, background 0.15s;
       white-space: nowrap;
     }
-
     .tab:hover { color: var(--text); }
-
     .tab.active {
       background: var(--bg);
       color: var(--primary);
@@ -112,40 +235,33 @@
     .content {
       max-width: 580px;
       margin: 0 auto;
-      padding: 24px 16px 80px;
+      padding: 22px 16px 60px;
     }
-
     .section { display: none; }
     .section.active { display: block; }
 
     /* ── Add Form ────────────────────────────────────────────────────────────── */
-    .add-form {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
+    .add-form { display: flex; gap: 8px; margin-bottom: 20px; }
     .add-form input[type="text"] {
       flex: 1;
       min-width: 0;
       padding: 10px 14px;
       background: var(--surface);
       border: 1.5px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 10px;
       font-size: 16px;
       color: var(--text);
       outline: none;
       transition: border-color 0.15s;
     }
-
     .add-form input[type="text"]::placeholder { color: var(--text-muted); }
     .add-form input[type="text"]:focus { border-color: var(--primary); }
 
-    .tag-select {
+    .day-select {
       padding: 10px 8px;
       background: var(--surface);
       border: 1.5px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 10px;
       font-size: 12px;
       font-weight: 600;
       color: var(--text-muted);
@@ -157,9 +273,9 @@
     .btn-add {
       padding: 10px 16px;
       background: var(--primary);
-      color: #fff;
+      color: var(--logo-a-txt);
       border: none;
-      border-radius: var(--radius);
+      border-radius: 10px;
       font-size: 22px;
       font-weight: 300;
       line-height: 1;
@@ -167,8 +283,7 @@
       flex-shrink: 0;
       transition: opacity 0.15s, transform 0.1s;
     }
-
-    .btn-add:hover { opacity: 0.88; }
+    .btn-add:hover  { opacity: 0.88; }
     .btn-add:active { transform: scale(0.95); }
 
     /* ── Group labels ────────────────────────────────────────────────────────── */
@@ -181,15 +296,10 @@
       padding: 0 2px;
       margin: 22px 0 8px;
     }
-
     .group-label:first-child { margin-top: 0; }
 
-    /* ── Items ───────────────────────────────────────────────────────────────── */
-    .items-list {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
+    /* ── Item list ───────────────────────────────────────────────────────────── */
+    .items-list { display: flex; flex-direction: column; gap: 7px; }
 
     .item {
       display: flex;
@@ -197,14 +307,12 @@
       gap: 10px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 10px;
       padding: 11px 12px;
-      box-shadow: var(--shadow);
-      transition: opacity 0.15s, box-shadow 0.15s;
-      user-select: none;
+      transition: opacity 0.15s;
       position: relative;
+      user-select: none;
     }
-
     .item.drag-source { opacity: 0; pointer-events: none; }
 
     /* ── Drag handle ─────────────────────────────────────────────────────────── */
@@ -214,18 +322,14 @@
       opacity: 0.4;
       cursor: grab;
       flex-shrink: 0;
-      line-height: 1;
-      padding: 4px 4px;
+      padding: 4px;
       touch-action: none;
-      user-select: none;
     }
-
     .drag-handle:active { cursor: grabbing; opacity: 0.8; }
 
     /* ── Checkbox ────────────────────────────────────────────────────────────── */
     .item-check {
-      width: 20px;
-      height: 20px;
+      width: 20px; height: 20px;
       border-radius: 50%;
       border: 2px solid var(--primary-lt);
       background: transparent;
@@ -236,23 +340,17 @@
       justify-content: center;
       transition: background 0.2s, border-color 0.2s;
     }
-
-    .item-check.checked {
-      background: var(--primary);
-      border-color: var(--primary);
-    }
-
+    .item-check.checked { background: var(--primary); border-color: var(--primary); }
     .item-check.checked::after {
       content: '';
       display: block;
-      width: 9px;
-      height: 5px;
-      border-left: 2px solid #fff;
-      border-bottom: 2px solid #fff;
+      width: 9px; height: 5px;
+      border-left: 2px solid var(--logo-a-txt);
+      border-bottom: 2px solid var(--logo-a-txt);
       transform: rotate(-45deg) translateY(-1px);
     }
 
-    /* ── Item text ───────────────────────────────────────────────────────────── */
+    /* ── Text ────────────────────────────────────────────────────────────────── */
     .item-text {
       flex: 1;
       font-size: 14px;
@@ -260,15 +358,10 @@
       word-break: break-word;
       cursor: text;
     }
-
     .item-text:hover { text-decoration: underline dotted var(--text-muted); }
+    .item.completed .item-text { text-decoration: line-through; color: var(--completed); }
 
-    .item.completed .item-text {
-      text-decoration: line-through;
-      color: var(--completed);
-    }
-
-    /* ── Tag badges (Soon / Later / Day) ─────────────────────────────────────── */
+    /* ── Tag badges ──────────────────────────────────────────────────────────── */
     .item-tag {
       font-size: 10px;
       font-weight: 700;
@@ -282,9 +375,7 @@
       outline: none;
       transition: opacity 0.15s;
     }
-
     .item-tag:active { opacity: 0.7; }
-
     .tag-soon  { background: var(--soon-bg);  color: var(--soon-fg); }
     .tag-later { background: var(--later-bg); color: var(--later-fg); }
     .tag-none  { background: var(--surface-2); color: var(--text-muted); }
@@ -297,21 +388,15 @@
       border-radius: 6px;
       padding: 5px 9px;
       font-size: 13px;
-      line-height: 1;
       color: var(--primary);
       cursor: pointer;
       flex-shrink: 0;
-      transition: background 0.12s, border-color 0.12s;
+      transition: background 0.12s;
     }
-
-    .btn-move:hover, .btn-move:active {
-      background: var(--soon-bg);
-      border-color: var(--primary);
-    }
+    .btn-move:hover { background: var(--soon-bg); }
 
     /* ── Delete button ───────────────────────────────────────────────────────── */
     .item-actions { display: flex; flex-shrink: 0; }
-
     .btn-action {
       background: transparent;
       border: 1px solid var(--border);
@@ -320,16 +405,9 @@
       font-size: 12px;
       color: var(--text-muted);
       cursor: pointer;
-      white-space: nowrap;
       transition: background 0.12s, color 0.12s, border-color 0.12s;
     }
-
-    .btn-action.btn-delete:hover,
-    .btn-action.btn-delete:active {
-      background: #FAEAE4;
-      color: #B84030;
-      border-color: #E0B0A8;
-    }
+    .btn-action.btn-delete:hover { background: var(--btn-del-hbg); color: var(--btn-del-hfg); border-color: var(--btn-del-hfg); }
 
     /* ── Inline edit ─────────────────────────────────────────────────────────── */
     .item-edit-input {
@@ -345,18 +423,18 @@
       min-width: 0;
     }
 
-    /* ── Context menu (long-press popup) ─────────────────────────────────────── */
+    /* ── Context menu ────────────────────────────────────────────────────────── */
+    .ctx-overlay { position: fixed; inset: 0; z-index: 1999; }
     .ctx-menu {
       position: fixed;
       z-index: 2000;
-      background: #fff;
+      background: var(--settings-bg);
       border: 1px solid var(--border);
       border-radius: 10px;
-      box-shadow: 0 8px 28px rgba(60,42,30,0.18);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
       overflow: hidden;
       min-width: 140px;
     }
-
     .ctx-item {
       display: block;
       width: 100%;
@@ -371,16 +449,9 @@
       color: var(--text);
       transition: background 0.1s;
     }
-
     .ctx-item:last-child { border-bottom: none; }
-    .ctx-item:hover, .ctx-item:active { background: var(--surface); }
+    .ctx-item:hover { background: var(--surface-2); }
     .ctx-item.active { color: var(--primary); font-weight: 700; }
-
-    .ctx-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1999;
-    }
 
     /* ── Notes ───────────────────────────────────────────────────────────────── */
     .note-item {
@@ -389,48 +460,26 @@
       gap: 10px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px 12px;
-      box-shadow: var(--shadow);
+      border-radius: 10px;
+      padding: 12px;
       cursor: pointer;
+      margin-bottom: 7px;
     }
-
     .note-preview { flex: 1; min-width: 0; }
-
-    .note-title {
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.4;
-      word-break: break-word;
-      color: var(--text);
-    }
-
-    .note-body {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.4;
-      margin-top: 3px;
-      word-break: break-word;
-      white-space: pre-wrap;
-    }
-
-    .note-more {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
+    .note-title { font-size: 14px; font-weight: 700; line-height: 1.4; word-break: break-word; }
+    .note-body { font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-top: 3px; white-space: pre-wrap; word-break: break-word; }
+    .note-more { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
     /* ── Note modal ──────────────────────────────────────────────────────────── */
     .note-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(60,42,30,0.4);
+      background: rgba(0,0,0,0.55);
       z-index: 1500;
       display: flex;
       align-items: flex-end;
       justify-content: center;
     }
-
     .note-modal {
       background: var(--bg);
       border-radius: 16px 16px 0 0;
@@ -439,9 +488,7 @@
       max-height: 85vh;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 -4px 24px rgba(60,42,30,0.15);
     }
-
     .note-modal-header {
       display: flex;
       align-items: center;
@@ -449,19 +496,16 @@
       padding: 14px 16px 10px;
       border-bottom: 1px solid var(--border);
     }
-
     .note-modal-header span {
       flex: 1;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
     }
-
     .note-close {
       background: var(--surface-2);
       border: none;
       border-radius: 50%;
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       font-size: 13px;
       cursor: pointer;
       color: var(--text-muted);
@@ -469,7 +513,6 @@
       align-items: center;
       justify-content: center;
     }
-
     .note-textarea {
       flex: 1;
       font-size: 15px;
@@ -483,37 +526,7 @@
       line-height: 1.6;
       min-height: 200px;
     }
-
-    /* ── Backup bar ──────────────────────────────────────────────────────────── */
-    .backup-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      padding: 10px 16px;
-      z-index: 10;
-    }
-
-    .btn-backup {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: background 0.12s, border-color 0.12s, color 0.12s;
-    }
-
-    .btn-backup:hover, .btn-backup:active {
-      background: var(--surface-2);
-      border-color: var(--text-muted);
-      color: var(--text);
-    }
+    .note-textarea::placeholder { color: var(--text-muted); }
 
     /* ── Empty state ─────────────────────────────────────────────────────────── */
     .empty-state {
@@ -528,9 +541,12 @@
 <body>
 
   <header>
-    <div class="logo">
-      <span class="logo-to">To</span><span class="logo-do">Do</span>
-      <span class="logo-ver">v2.0</span>
+    <div class="header-top">
+      <div class="logo">
+        <span class="logo-to">To</span><span class="logo-do">Do</span>
+        <span class="logo-ver">v2.1</span>
+      </div>
+      <button class="settings-btn" id="settings-btn" title="Settings">⚙︎</button>
     </div>
     <nav class="tabs">
       <button class="tab active" data-tab="week">▦ Week</button>
@@ -539,14 +555,29 @@
     </nav>
   </header>
 
+  <!-- Settings panel -->
+  <div class="settings-panel" id="settings-panel">
+    <div class="settings-section">
+      <div class="settings-label">Theme</div>
+      <div class="theme-row">
+        <button class="theme-btn" data-theme="light">☀︎ Light</button>
+        <button class="theme-btn" data-theme="dark">◗ Dark</button>
+      </div>
+    </div>
+    <div class="settings-divider"></div>
+    <button class="settings-item" id="settings-export">↓ Export backup</button>
+    <button class="settings-item" id="settings-import">↑ Import backup</button>
+  </div>
+  <input type="file" id="import-file" accept=".json" style="display:none" />
+
   <div class="content">
 
-    <!-- ── WEEK ──────────────────────────────────────────────────────────────── -->
+    <!-- WEEK -->
     <section class="section active" id="week-section">
       <div class="add-form">
         <input type="text" id="week-input" placeholder="Add to this week…" autocomplete="off" />
-        <select class="tag-select" id="week-day-select" title="Day">
-          <option value="">Any day</option>
+        <select class="day-select" id="week-day-select" title="Day">
+          <option value="">Any</option>
           <option value="mon">Mon</option>
           <option value="tue">Tue</option>
           <option value="wed">Wed</option>
@@ -555,83 +586,89 @@
           <option value="sat">Sat</option>
           <option value="sun">Sun</option>
         </select>
-        <button class="btn-add" id="week-add-btn" title="Add">+</button>
+        <button class="btn-add" id="week-add-btn">+</button>
       </div>
       <div id="week-container"></div>
     </section>
 
-    <!-- ── ALL ───────────────────────────────────────────────────────────────── -->
+    <!-- ALL -->
     <section class="section" id="all-section">
       <div class="add-form">
         <input type="text" id="all-input" placeholder="Add a task…" autocomplete="off" />
-        <select class="tag-select" id="all-tag-select" title="Tag">
-          <option value="">No tag</option>
-          <option value="soon">Soon</option>
-          <option value="later">Later</option>
-        </select>
-        <button class="btn-add" id="all-add-btn" title="Add">+</button>
+        <button class="btn-add" id="all-add-btn">+</button>
       </div>
       <div id="all-container"></div>
     </section>
 
-    <!-- ── NOTES ─────────────────────────────────────────────────────────────── -->
+    <!-- NOTES -->
     <section class="section" id="notes-section">
       <div class="add-form">
         <input type="text" id="notes-input" placeholder="New note title…" autocomplete="off" />
-        <button class="btn-add" id="notes-add-btn" title="Add">+</button>
+        <button class="btn-add" id="notes-add-btn">+</button>
       </div>
-      <div class="items-list" id="notes-list"></div>
+      <div id="notes-list"></div>
     </section>
 
   </div>
 
-  <div class="backup-bar">
-    <button class="btn-backup" id="export-btn">↓ Export backup</button>
-    <button class="btn-backup" id="import-btn">↑ Import backup</button>
-    <input type="file" id="import-file" accept=".json" style="display:none" />
-  </div>
-
   <script>
-    // ─────────────────────────────────────────────────────────────────────────
-    // Constants
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Constants ───────────────────────────────────────────────────────────
     const STORAGE_KEY = 'mytodo_v1';
     const DAY_ORDER   = ['mon','tue','wed','thu','fri','sat','sun'];
     const DAY_LABEL   = { mon:'MON', tue:'TUE', wed:'WED', thu:'THU', fri:'FRI', sat:'SAT', sun:'SUN' };
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // State
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── State ───────────────────────────────────────────────────────────────
     function loadState() {
       try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
       catch { return {}; }
     }
-
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     function uid()  { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-
-    function todayMidnight() {
-      const d = new Date(); d.setHours(0,0,0,0); return d.getTime();
-    }
+    function todayMidnight() { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
 
     const raw = loadState();
-
-    // Migrate: old 'today' items become 'week' items with no day tag
     const state = {
-      week:  raw.week  || (raw.today ? raw.today.map(i => ({ ...i, day: '' })) : []),
+      week:  raw.week  || (raw.today ? raw.today.map(i => ({ ...i, day: i.day || '' })) : []),
       all:   raw.all   || [],
       notes: raw.notes || [],
     };
-
-    // Clean up expired completed week items
-    state.week = state.week.filter(
-      item => !(item.completed && item.completedAt < todayMidnight())
-    );
+    state.week = state.week.filter(i => !(i.completed && i.completedAt < todayMidnight()));
     save();
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Tab switching
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Theme ───────────────────────────────────────────────────────────────
+    const savedTheme = localStorage.getItem('mytodo_theme') || 'dark';
+    applyTheme(savedTheme);
+
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('mytodo_theme', t);
+      document.querySelectorAll('.theme-btn').forEach(btn =>
+        btn.classList.toggle('active', btn.dataset.theme === t)
+      );
+    }
+
+    document.querySelectorAll('.theme-btn').forEach(btn =>
+      btn.addEventListener('click', () => { applyTheme(btn.dataset.theme); })
+    );
+
+    // ── Settings panel ──────────────────────────────────────────────────────
+    const settingsBtn   = document.getElementById('settings-btn');
+    const settingsPanel = document.getElementById('settings-panel');
+
+    settingsBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = settingsPanel.classList.toggle('open');
+      settingsBtn.classList.toggle('open', open);
+    });
+
+    document.addEventListener('click', e => {
+      if (!settingsPanel.contains(e.target) && e.target !== settingsBtn) {
+        settingsPanel.classList.remove('open');
+        settingsBtn.classList.remove('open');
+      }
+    });
+
+    // ── Tabs ────────────────────────────────────────────────────────────────
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -641,16 +678,13 @@
       });
     });
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Context menu (for long-press tag/day selection)
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Context menu ────────────────────────────────────────────────────────
     function showMenu(anchorEl, options, onSelect) {
       document.querySelector('.ctx-overlay')?.remove();
       document.querySelector('.ctx-menu')?.remove();
 
       const overlay = document.createElement('div');
       overlay.className = 'ctx-overlay';
-
       const menu = document.createElement('div');
       menu.className = 'ctx-menu';
 
@@ -660,8 +694,7 @@
         btn.textContent = opt.label;
         btn.addEventListener('click', e => {
           e.stopPropagation();
-          overlay.remove();
-          menu.remove();
+          overlay.remove(); menu.remove();
           onSelect(opt.value);
         });
         menu.appendChild(btn);
@@ -670,122 +703,84 @@
       document.body.appendChild(overlay);
       document.body.appendChild(menu);
 
-      // Position near anchor
       const r = anchorEl.getBoundingClientRect();
       const mw = 160;
       let left = r.left;
       if (left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8;
       menu.style.left = left + 'px';
       const menuH = options.length * 45;
-      const below = r.bottom + 4 + menuH < window.innerHeight;
-      menu.style.top = (below ? r.bottom + 4 : r.top - menuH - 4) + 'px';
+      menu.style.top = (r.bottom + 4 + menuH < window.innerHeight ? r.bottom + 4 : r.top - menuH - 4) + 'px';
 
       overlay.addEventListener('click', () => { overlay.remove(); menu.remove(); });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Long-press utility
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Long press ──────────────────────────────────────────────────────────
     function attachLongPress(el, callback) {
-      let timer = null;
-      let moved = false;
-
-      function start(e) {
-        moved = false;
-        timer = setTimeout(() => { if (!moved) callback(e); }, 500);
-      }
-
-      function cancel() { clearTimeout(timer); timer = null; }
-
-      el.addEventListener('mousedown',   start);
-      el.addEventListener('touchstart',  start, { passive: true });
-      el.addEventListener('mousemove',   () => { moved = true; cancel(); });
-      el.addEventListener('touchmove',   () => { moved = true; cancel(); }, { passive: true });
-      el.addEventListener('mouseup',     cancel);
-      el.addEventListener('mouseleave',  cancel);
-      el.addEventListener('touchend',    cancel);
-      el.addEventListener('touchcancel', cancel);
+      let timer = null, moved = false;
+      const start = e => { moved = false; timer = setTimeout(() => { if (!moved) callback(e); }, 500); };
+      const cancel = () => { clearTimeout(timer); timer = null; };
+      el.addEventListener('mousedown',  start);
+      el.addEventListener('touchstart', start,  { passive: true });
+      el.addEventListener('mousemove',  () => { moved = true; cancel(); });
+      el.addEventListener('touchmove',  () => { moved = true; cancel(); }, { passive: true });
+      el.addEventListener('mouseup',    cancel);
+      el.addEventListener('mouseleave', cancel);
+      el.addEventListener('touchend',   cancel);
+      el.addEventListener('touchcancel',cancel);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // WEEK section
-    // ─────────────────────────────────────────────────────────────────────────
-    const weekInput    = document.getElementById('week-input');
-    const weekAddBtn   = document.getElementById('week-add-btn');
-    const weekDaySel   = document.getElementById('week-day-select');
-    const weekContainer= document.getElementById('week-container');
+    // ── WEEK ────────────────────────────────────────────────────────────────
+    const weekInput   = document.getElementById('week-input');
+    const weekDaySel  = document.getElementById('week-day-select');
+    const weekContainer = document.getElementById('week-container');
 
-    weekAddBtn.addEventListener('click', addWeek);
+    document.getElementById('week-add-btn').addEventListener('click', addWeek);
     weekInput.addEventListener('keydown', e => { if (e.key === 'Enter') addWeek(); });
 
     function addWeek() {
       const text = weekInput.value.trim();
       if (!text) return;
-      // New items prepended (unshift) so they appear at top of uncategorised
       state.week.unshift({ id: uid(), text, completed: false, completedAt: null, day: weekDaySel.value });
-      save();
-      weekInput.value = '';
-      weekDaySel.value = '';
-      renderWeek();
+      save(); weekInput.value = ''; weekDaySel.value = ''; renderWeek();
     }
 
     function renderWeek() {
       weekContainer.innerHTML = '';
-
       if (!state.week.length) {
-        weekContainer.innerHTML = '<div class="empty-state">Nothing for this week yet.<br>Add something above ▦</div>';
+        weekContainer.innerHTML = '<div class="empty-state">Nothing for this week.<br>Add something above ▦</div>';
         return;
       }
 
-      function renderGroup(items, label, isDayGroup) {
+      function renderGroup(items, label) {
         if (!items.length) return;
         const gl = document.createElement('div');
         gl.className = 'group-label';
         gl.textContent = label;
         weekContainer.appendChild(gl);
-
         const list = document.createElement('div');
         list.className = 'items-list';
         weekContainer.appendChild(list);
-
-        // Within each group: uncompleted first, completed last
-        const display = [
-          ...items.filter(i => !i.completed),
-          ...items.filter(i =>  i.completed),
-        ];
+        const display = [...items.filter(i => !i.completed), ...items.filter(i => i.completed)];
         display.forEach(item => list.appendChild(makeWeekItem(item)));
         attachDrag(list, state.week, renderWeek);
       }
 
-      // Uncategorised (no day) — newest first (already inserted with unshift)
-      const uncategorised = state.week.filter(i => !i.day);
-      renderGroup(uncategorised, 'Any day');
-
-      // Then Mon → Sun
-      DAY_ORDER.forEach(day => {
-        const items = state.week.filter(i => i.day === day);
-        renderGroup(items, DAY_LABEL[day]);
-      });
+      renderGroup(state.week.filter(i => !i.day), 'Any day');
+      DAY_ORDER.forEach(day => renderGroup(state.week.filter(i => i.day === day), DAY_LABEL[day]));
     }
 
     function makeWeekItem(item) {
-      const dayLabel = item.day ? DAY_LABEL[item.day] : '+ day';
-      const tagClass = item.day ? 'tag-day' : 'tag-none';
-
       const el = document.createElement('div');
       el.className = 'item' + (item.completed ? ' completed' : '');
       el.dataset.id = item.id;
       el.innerHTML = `
         <span class="drag-handle" aria-hidden="true">⠿</span>
-        <div class="item-check${item.completed ? ' checked' : ''}" role="checkbox" aria-checked="${item.completed}" tabindex="0"></div>
+        <div class="item-check${item.completed ? ' checked' : ''}" tabindex="0"></div>
         <span class="item-text">${esc(item.text)}</span>
-        <button class="item-tag ${tagClass}" data-action="day" title="Hold to change day">${dayLabel}</button>
+        <button class="item-tag ${item.day ? 'tag-day' : 'tag-none'}" data-action="day">${item.day ? DAY_LABEL[item.day] : '+ day'}</button>
         <button class="btn-move" data-action="move" title="Move to All">∷</button>
-        <div class="item-actions">
-          <button class="btn-action btn-delete" data-action="delete">✕</button>
-        </div>
+        <div class="item-actions"><button class="btn-action btn-delete" data-action="delete">✕</button></div>
       `;
-
       const check = el.querySelector('.item-check');
       const toggle = () => {
         item.completed = !item.completed;
@@ -793,89 +788,57 @@
         save(); renderWeek();
       };
       check.addEventListener('click', toggle);
-      check.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
+      check.addEventListener('keydown', e => { if (e.key===' '||e.key==='Enter'){e.preventDefault();toggle();} });
 
-      // Long press tag to pick day
       const dayBtn = el.querySelector('[data-action="day"]');
-      attachLongPress(dayBtn, () => {
-        const opts = [
-          { label: '— Any day', value: '', active: !item.day },
-          ...DAY_ORDER.map(d => ({ label: DAY_LABEL[d], value: d, active: item.day === d })),
-        ];
-        showMenu(dayBtn, opts, val => { item.day = val; save(); renderWeek(); });
-      });
-      // Short tap also opens menu (more discoverable on mobile)
-      dayBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        const opts = [
-          { label: '— Any day', value: '', active: !item.day },
-          ...DAY_ORDER.map(d => ({ label: DAY_LABEL[d], value: d, active: item.day === d })),
-        ];
-        showMenu(dayBtn, opts, val => { item.day = val; save(); renderWeek(); });
-      });
+      const openDayMenu = () => showMenu(dayBtn,
+        [{ label:'— Any day', value:'', active:!item.day }, ...DAY_ORDER.map(d => ({ label:DAY_LABEL[d], value:d, active:item.day===d }))],
+        val => { item.day = val; save(); renderWeek(); }
+      );
+      dayBtn.addEventListener('click', e => { e.stopPropagation(); openDayMenu(); });
 
       el.querySelector('[data-action="move"]').addEventListener('click', () => {
         state.week.splice(state.week.indexOf(item), 1);
         state.all.push({ id: item.id, text: item.text, tag: '' });
         save(); renderWeek(); renderAll();
       });
-
       el.querySelector('[data-action="delete"]').addEventListener('click', () => {
         state.week.splice(state.week.indexOf(item), 1);
         save(); renderWeek();
       });
-
       makeEditable(el.querySelector('.item-text'), item, renderWeek);
       return el;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // ALL section
-    // ─────────────────────────────────────────────────────────────────────────
-    const allInput     = document.getElementById('all-input');
-    const allAddBtn    = document.getElementById('all-add-btn');
-    const allTagSelect = document.getElementById('all-tag-select');
+    // ── ALL ─────────────────────────────────────────────────────────────────
+    const allInput    = document.getElementById('all-input');
     const allContainer = document.getElementById('all-container');
 
-    allAddBtn.addEventListener('click', addAll);
+    document.getElementById('all-add-btn').addEventListener('click', addAll);
     allInput.addEventListener('keydown', e => { if (e.key === 'Enter') addAll(); });
 
     function addAll() {
       const text = allInput.value.trim();
       if (!text) return;
-      state.all.push({ id: uid(), text, tag: allTagSelect.value });
-      save();
-      allInput.value = '';
-      allTagSelect.value = '';
-      renderAll();
+      state.all.push({ id: uid(), text, tag: '' });
+      save(); allInput.value = ''; renderAll();
     }
 
     function renderAll() {
       allContainer.innerHTML = '';
       if (!state.all.length) {
-        allContainer.innerHTML = '<div class="empty-state">No tasks yet.<br>Add something you want to get to ✨</div>';
+        allContainer.innerHTML = '<div class="empty-state">No tasks yet.<br>Add something you want to get to ✦</div>';
         return;
       }
-
-      const groups = [
-        { key: 'soon',  label: 'Soon' },
-        { key: 'later', label: 'Later' },
-        { key: '',      label: 'Untagged' },
-      ];
-
-      groups.forEach(({ key, label }) => {
+      [{ key:'soon', label:'Soon' }, { key:'later', label:'Later' }, { key:'', label:'Untagged' }].forEach(({ key, label }) => {
         const items = state.all.filter(i => i.tag === key);
         if (!items.length) return;
-
         const gl = document.createElement('div');
-        gl.className = 'group-label';
-        gl.textContent = label;
+        gl.className = 'group-label'; gl.textContent = label;
         allContainer.appendChild(gl);
-
         const list = document.createElement('div');
         list.className = 'items-list';
         allContainer.appendChild(list);
-
         items.forEach(item => list.appendChild(makeAllItem(item)));
         attachDrag(list, state.all, renderAll);
       });
@@ -884,64 +847,48 @@
     function makeAllItem(item) {
       const tagLabel = item.tag === 'soon' ? 'Soon' : item.tag === 'later' ? 'Later' : '+ tag';
       const tagClass = item.tag ? `tag-${item.tag}` : 'tag-none';
-
       const el = document.createElement('div');
-      el.className = 'item';
-      el.dataset.id = item.id;
+      el.className = 'item'; el.dataset.id = item.id;
       el.innerHTML = `
         <span class="drag-handle" aria-hidden="true">⠿</span>
         <span class="item-text">${esc(item.text)}</span>
-        <button class="item-tag ${tagClass}" data-action="tag" title="Hold to change tag">${tagLabel}</button>
+        <button class="item-tag ${tagClass}" data-action="tag">${tagLabel}</button>
         <button class="btn-move" data-action="week" title="Move to Week">▦</button>
-        <div class="item-actions">
-          <button class="btn-action btn-delete" data-action="delete">✕</button>
-        </div>
+        <div class="item-actions"><button class="btn-action btn-delete" data-action="delete">✕</button></div>
       `;
-
-      // Tag badge — tap or long press opens menu
       const tagBtn = el.querySelector('[data-action="tag"]');
-      function openTagMenu() {
-        const opts = [
-          { label: '— No tag', value: '',      active: item.tag === '' },
-          { label: 'Soon',     value: 'soon',  active: item.tag === 'soon' },
-          { label: 'Later',    value: 'later', active: item.tag === 'later' },
-        ];
-        showMenu(tagBtn, opts, val => { item.tag = val; save(); renderAll(); });
-      }
-      tagBtn.addEventListener('click', e => { e.stopPropagation(); openTagMenu(); });
-
+      tagBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        showMenu(tagBtn,
+          [{ label:'— No tag', value:'', active:item.tag==='' }, { label:'Soon', value:'soon', active:item.tag==='soon' }, { label:'Later', value:'later', active:item.tag==='later' }],
+          val => { item.tag = val; save(); renderAll(); }
+        );
+      });
       el.querySelector('[data-action="week"]').addEventListener('click', () => {
         state.all.splice(state.all.indexOf(item), 1);
         state.week.unshift({ id: item.id, text: item.text, completed: false, completedAt: null, day: '' });
         save(); renderAll(); renderWeek();
       });
-
       el.querySelector('[data-action="delete"]').addEventListener('click', () => {
         state.all.splice(state.all.indexOf(item), 1);
         save(); renderAll();
       });
-
       makeEditable(el.querySelector('.item-text'), item, renderAll);
       return el;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // NOTES section
-    // ─────────────────────────────────────────────────────────────────────────
-    const notesInput  = document.getElementById('notes-input');
-    const notesAddBtn = document.getElementById('notes-add-btn');
-    const notesList   = document.getElementById('notes-list');
+    // ── NOTES ───────────────────────────────────────────────────────────────
+    const notesInput = document.getElementById('notes-input');
+    const notesList  = document.getElementById('notes-list');
 
-    notesAddBtn.addEventListener('click', addNote);
+    document.getElementById('notes-add-btn').addEventListener('click', addNote);
     notesInput.addEventListener('keydown', e => { if (e.key === 'Enter') addNote(); });
 
     function addNote() {
       const text = notesInput.value.trim();
       if (!text) return;
       state.notes.unshift({ id: uid(), text });
-      save();
-      notesInput.value = '';
-      renderNotes();
+      save(); notesInput.value = ''; renderNotes();
     }
 
     function renderNotes() {
@@ -958,31 +905,23 @@
       const title = lines[0] || '(empty)';
       const bodyLines = lines.slice(1, 3);
       const hasMore = lines.length > 3;
-
       const el = document.createElement('div');
-      el.className = 'note-item';
-      el.dataset.id = note.id;
+      el.className = 'note-item'; el.dataset.id = note.id;
       el.innerHTML = `
         <div class="note-preview">
           <div class="note-title">${esc(title)}</div>
           ${bodyLines.length ? `<div class="note-body">${esc(bodyLines.join('\n'))}</div>` : ''}
           ${hasMore ? `<div class="note-more">…</div>` : ''}
         </div>
-        <div class="item-actions">
-          <button class="btn-action btn-delete" data-action="delete">✕</button>
-        </div>
+        <div class="item-actions"><button class="btn-action btn-delete" data-action="delete">✕</button></div>
       `;
-
-      // Click note body → open modal
       el.querySelector('.note-preview').addEventListener('click', () => openNoteModal(note));
-
       el.querySelector('[data-action="delete"]').addEventListener('click', e => {
         e.stopPropagation();
         if (note.text && !confirm('Delete this note?')) return;
         state.notes.splice(state.notes.indexOf(note), 1);
         save(); renderNotes();
       });
-
       return el;
     }
 
@@ -998,78 +937,55 @@
           <textarea class="note-textarea" placeholder="First line = title, then your note…"></textarea>
         </div>
       `;
-
       const textarea = overlay.querySelector('.note-textarea');
       textarea.value = note.text;
       document.body.appendChild(overlay);
       textarea.focus();
-      // Move cursor to end
       textarea.setSelectionRange(textarea.value.length, textarea.value.length);
 
-      function commitNote() {
+      function commit() {
         const val = textarea.value.trim();
         if (val !== note.text) {
-          if (!val) {
-            state.notes.splice(state.notes.indexOf(note), 1);
-          } else {
-            note.text = val;
-          }
-          save();
-          renderNotes();
+          if (!val) state.notes.splice(state.notes.indexOf(note), 1);
+          else note.text = val;
+          save(); renderNotes();
         }
         overlay.remove();
       }
-
-      overlay.querySelector('.note-close').addEventListener('click', commitNote);
-      overlay.addEventListener('click', e => { if (e.target === overlay) commitNote(); });
-      // Prevent modal clicks closing it
+      overlay.querySelector('.note-close').addEventListener('click', commit);
+      overlay.addEventListener('click', e => { if (e.target === overlay) commit(); });
       overlay.querySelector('.note-modal').addEventListener('click', e => e.stopPropagation());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Drag-to-reorder
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Drag ────────────────────────────────────────────────────────────────
     function attachDrag(listEl, masterArray, rerenderFn) {
       listEl.querySelectorAll('.drag-handle').forEach(handle => {
         handle.addEventListener('mousedown',  e => startDrag(e, e.clientX, e.clientY));
-        handle.addEventListener('touchstart', e => {
-          const t = e.touches[0];
-          startDrag(e, t.clientX, t.clientY);
-        }, { passive: false });
+        handle.addEventListener('touchstart', e => { const t=e.touches[0]; startDrag(e,t.clientX,t.clientY); }, { passive:false });
       });
 
-      function startDrag(e, startX, startY) {
+      function startDrag(e, sx, sy) {
         e.preventDefault();
         const dragEl = e.currentTarget.closest('.item');
         if (!dragEl) return;
-
-        const rect    = dragEl.getBoundingClientRect();
-        const offsetY = startY - rect.top;
-        const offsetX = startX - rect.left;
+        const rect = dragEl.getBoundingClientRect();
+        const oy = sy - rect.top, ox = sx - rect.left;
 
         const clone = dragEl.cloneNode(true);
-        Object.assign(clone.style, {
-          position: 'fixed', top: rect.top + 'px', left: rect.left + 'px',
-          width: rect.width + 'px', margin: '0', zIndex: '1000', opacity: '0.9',
-          pointerEvents: 'none', boxShadow: '0 10px 28px rgba(60,42,30,0.22)',
-          transform: 'rotate(1.5deg) scale(1.02)',
-        });
+        Object.assign(clone.style, { position:'fixed', top:rect.top+'px', left:rect.left+'px', width:rect.width+'px', margin:'0', zIndex:'1000', opacity:'0.9', pointerEvents:'none', transform:'rotate(1.5deg) scale(1.02)' });
         document.body.appendChild(clone);
 
         const ph = document.createElement('div');
-        ph.style.cssText = `height:${rect.height}px;border:2px dashed #E8C4A0;border-radius:10px;background:#FAEBDF;opacity:0.6;flex-shrink:0;`;
+        ph.style.cssText = `height:${rect.height}px;border:2px dashed var(--primary);border-radius:10px;background:var(--soon-bg);opacity:0.5;flex-shrink:0;`;
         dragEl.classList.add('drag-source');
         dragEl.after(ph);
 
         function move(cy, cx) {
-          clone.style.top  = (cy - offsetY) + 'px';
-          clone.style.left = (cx - offsetX) + 'px';
-          const siblings = Array.from(listEl.querySelectorAll('.item:not(.drag-source)'));
+          clone.style.top  = (cy-oy)+'px';
+          clone.style.left = (cx-ox)+'px';
+          const sibs = Array.from(listEl.querySelectorAll('.item:not(.drag-source)'));
           let placed = false;
-          for (const sib of siblings) {
-            const r = sib.getBoundingClientRect();
-            if (cy < r.top + r.height / 2) { listEl.insertBefore(ph, sib); placed = true; break; }
-          }
+          for (const s of sibs) { const r=s.getBoundingClientRect(); if(cy<r.top+r.height/2){listEl.insertBefore(ph,s);placed=true;break;} }
           if (!placed) listEl.appendChild(ph);
         }
 
@@ -1077,74 +993,61 @@
           ph.replaceWith(dragEl);
           dragEl.classList.remove('drag-source');
           clone.remove();
-
-          const newIds    = Array.from(listEl.querySelectorAll('.item')).map(el => el.dataset.id);
-          const idSet     = new Set(newIds);
-          const reordered = newIds.map(id => masterArray.find(i => i.id === id)).filter(Boolean);
-          let ri = 0;
-          for (let i = 0; i < masterArray.length; i++) {
-            if (idSet.has(masterArray[i].id)) masterArray[i] = reordered[ri++];
-          }
+          const newIds = Array.from(listEl.querySelectorAll('.item')).map(el=>el.dataset.id);
+          const idSet = new Set(newIds);
+          const reordered = newIds.map(id=>masterArray.find(i=>i.id===id)).filter(Boolean);
+          let ri=0;
+          for(let i=0;i<masterArray.length;i++) { if(idSet.has(masterArray[i].id)) masterArray[i]=reordered[ri++]; }
           save(); rerenderFn();
-
-          document.removeEventListener('mousemove',   onMouseMove);
-          document.removeEventListener('mouseup',     finish);
-          document.removeEventListener('touchmove',   onTouchMove);
-          document.removeEventListener('touchend',    finish);
-          document.removeEventListener('touchcancel', finish);
+          document.removeEventListener('mousemove',onMM);
+          document.removeEventListener('mouseup',finish);
+          document.removeEventListener('touchmove',onTM);
+          document.removeEventListener('touchend',finish);
+          document.removeEventListener('touchcancel',finish);
         }
-
-        function onMouseMove(e) { move(e.clientY, e.clientX); }
-        function onTouchMove(e) { e.preventDefault(); const t = e.touches[0]; move(t.clientY, t.clientX); }
-
-        document.addEventListener('mousemove',   onMouseMove);
-        document.addEventListener('mouseup',     finish);
-        document.addEventListener('touchmove',   onTouchMove, { passive: false });
-        document.addEventListener('touchend',    finish);
-        document.addEventListener('touchcancel', finish);
+        const onMM = e=>move(e.clientY,e.clientX);
+        const onTM = e=>{ e.preventDefault(); const t=e.touches[0]; move(t.clientY,t.clientX); };
+        document.addEventListener('mousemove',onMM);
+        document.addEventListener('mouseup',finish);
+        document.addEventListener('touchmove',onTM,{passive:false});
+        document.addEventListener('touchend',finish);
+        document.addEventListener('touchcancel',finish);
       }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Inline text edit
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Inline edit ─────────────────────────────────────────────────────────
     function makeEditable(textSpan, item, rerenderFn) {
       textSpan.addEventListener('click', () => {
         if (textSpan.querySelector('.item-edit-input')) return;
         const current = item.text;
         const input = document.createElement('input');
-        input.type = 'text'; input.className = 'item-edit-input'; input.value = current;
-        textSpan.textContent = '';
-        textSpan.appendChild(input);
+        input.type='text'; input.className='item-edit-input'; input.value=current;
+        textSpan.textContent=''; textSpan.appendChild(input);
         input.focus(); input.select();
-
-        function commit() {
-          const val = input.value.trim();
-          if (val && val !== current) { item.text = val; save(); }
-          rerenderFn();
-        }
-        input.addEventListener('keydown', e => {
-          if (e.key === 'Enter')  { e.preventDefault(); commit(); }
-          if (e.key === 'Escape') { e.preventDefault(); rerenderFn(); }
-        });
+        const commit = () => { const v=input.value.trim(); if(v&&v!==current){item.text=v;save();} rerenderFn(); };
+        input.addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();commit();} if(e.key==='Escape'){e.preventDefault();rerenderFn();} });
         input.addEventListener('blur', commit);
       });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Backup
-    // ─────────────────────────────────────────────────────────────────────────
-    document.getElementById('export-btn').addEventListener('click', () => {
+    // ── Backup ──────────────────────────────────────────────────────────────
+    document.getElementById('settings-export').addEventListener('click', () => {
       const date = new Date().toISOString().slice(0,10);
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
-      a.href = url; a.download = `mytodo-backup-${date}.json`;
+      a.href=url; a.download=`mytodo-backup-${date}.json`;
       a.click(); URL.revokeObjectURL(url);
+      settingsPanel.classList.remove('open');
+      settingsBtn.classList.remove('open');
     });
 
     const importFile = document.getElementById('import-file');
-    document.getElementById('import-btn').addEventListener('click', () => { importFile.value = ''; importFile.click(); });
+    document.getElementById('settings-import').addEventListener('click', () => {
+      importFile.value=''; importFile.click();
+      settingsPanel.classList.remove('open');
+      settingsBtn.classList.remove('open');
+    });
     importFile.addEventListener('change', () => {
       const file = importFile.files[0];
       if (!file) return;
@@ -1153,7 +1056,7 @@
         try {
           const data = JSON.parse(e.target.result);
           if (!data.all) throw new Error();
-          if (!confirm(`Replace all current data with backup from ${file.name}?`)) return;
+          if (!confirm(`Replace all data with backup from ${file.name}?`)) return;
           state.week  = data.week  || data.today || [];
           state.all   = data.all   || [];
           state.notes = data.notes || [];
@@ -1163,34 +1066,22 @@
       reader.readAsText(file);
     });
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Midnight cleanup
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Midnight cleanup ─────────────────────────────────────────────────────
     function scheduleMidnightCleanup() {
-      const now  = new Date();
-      const next = new Date(now);
-      next.setDate(next.getDate() + 1); next.setHours(0,0,0,0);
+      const next = new Date(); next.setDate(next.getDate()+1); next.setHours(0,0,0,0);
       setTimeout(() => {
-        state.week = state.week.filter(item => !(item.completed && item.completedAt < todayMidnight()));
+        state.week = state.week.filter(i => !(i.completed && i.completedAt < todayMidnight()));
         save(); renderWeek(); scheduleMidnightCleanup();
-      }, next - now);
+      }, next - new Date());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Utility
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Util ─────────────────────────────────────────────────────────────────
     function esc(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Init
-    // ─────────────────────────────────────────────────────────────────────────
-    renderWeek();
-    renderAll();
-    renderNotes();
-    scheduleMidnightCleanup();
+    // ── Init ─────────────────────────────────────────────────────────────────
+    renderWeek(); renderAll(); renderNotes(); scheduleMidnightCleanup();
   </script>
-
 </body>
 </html>
