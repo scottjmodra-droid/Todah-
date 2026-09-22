@@ -96,25 +96,14 @@
       align-items: baseline;
       user-select: none;
     }
-    .logo-to {
-      background: var(--logo-a-bg);
-      color: var(--logo-a-txt);
+    .logo-text {
+      background: #FFD60A;
+      color: #1C1C1E;
       font-size: 16px;
       font-weight: 800;
-      letter-spacing: -0.5px;
-      padding: 3px 6px 3px 8px;
-      border-radius: 6px 0 0 6px;
-    }
-    .logo-do {
-      background: var(--logo-b-bg);
-      color: var(--logo-b-txt);
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      padding: 3px 8px 3px 6px;
-      border-radius: 0 6px 6px 0;
-      border: 2px solid var(--logo-b-bdr);
-      border-left: none;
+      letter-spacing: -0.3px;
+      padding: 3px 10px;
+      border-radius: 7px;
     }
     .logo-ver {
       font-size: 9px;
@@ -548,7 +537,7 @@
   <header>
     <div class="header-top">
       <div class="logo">
-        <span class="logo-to">To</span><span class="logo-do">Do</span>
+        <span class="logo-text">ToDo</span>
         <span class="logo-ver">v2.3</span>
       </div>
       <button class="settings-btn" id="settings-btn" title="Settings">⚙︎</button>
@@ -655,6 +644,7 @@
       document.querySelectorAll('.theme-btn').forEach(btn =>
         btn.classList.toggle('active', btn.dataset.theme === t)
       );
+      generateAppIcon();
     }
 
     document.querySelectorAll('.theme-btn').forEach(btn =>
@@ -1095,54 +1085,22 @@
 
     // ── App icon (home screen) ───────────────────────────────────────────────
     function generateAppIcon() {
-      const S = 180, bw = 130, bh = 52, r = 11;
-      const lx = (S - bw) / 2;
-      const ty = (S - bh * 2) / 2;      // top block y
-      const dy = ty + bh;                // bottom block y
+      const S = 180;
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const bg   = isDark ? '#1C1C1E' : '#FFD60A';
+      const fg   = isDark ? '#FFD60A' : '#1C1C1E';
       const canvas = document.createElement('canvas');
       canvas.width = S; canvas.height = S;
       const c = canvas.getContext('2d');
 
-      // Background
-      c.fillStyle = '#FAF6F0';
+      c.fillStyle = bg;
       c.fillRect(0, 0, S, S);
 
-      // "To" block — rounded top corners
-      c.beginPath();
-      c.moveTo(lx + r, ty);
-      c.lineTo(lx + bw - r, ty);
-      c.quadraticCurveTo(lx + bw, ty, lx + bw, ty + r);
-      c.lineTo(lx + bw, ty + bh);
-      c.lineTo(lx, ty + bh);
-      c.lineTo(lx, ty + r);
-      c.quadraticCurveTo(lx, ty, lx + r, ty);
-      c.closePath();
-      c.fillStyle = '#FFD60A';
-      c.fill();
-
-      // "Do" block — rounded bottom corners + border
-      c.beginPath();
-      c.moveTo(lx, dy);
-      c.lineTo(lx + bw, dy);
-      c.lineTo(lx + bw, dy + bh - r);
-      c.quadraticCurveTo(lx + bw, dy + bh, lx + bw - r, dy + bh);
-      c.lineTo(lx + r, dy + bh);
-      c.quadraticCurveTo(lx, dy + bh, lx, dy + bh - r);
-      c.closePath();
-      c.fillStyle = '#FFFFFF';
-      c.fill();
-      c.strokeStyle = '#1C1C1E';
-      c.lineWidth = 3;
-      c.stroke();
-
-      // Text
-      c.font = 'bold 28px BlinkMacSystemFont, Arial, sans-serif';
+      c.font = 'bold 44px BlinkMacSystemFont, Arial, sans-serif';
       c.textAlign = 'center';
       c.textBaseline = 'middle';
-      c.fillStyle = '#1C1C1E';
-      c.fillText('To', S / 2, ty + bh / 2);
-      c.fillStyle = '#1C1C1E';
-      c.fillText('Do', S / 2, dy + bh / 2);
+      c.fillStyle = fg;
+      c.fillText('ToDo', S / 2, S / 2);
 
       const iconUrl = canvas.toDataURL('image/png');
       document.getElementById('app-icon').href = iconUrl;
