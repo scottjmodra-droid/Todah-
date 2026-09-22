@@ -1,60 +1,60 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ToDo</title>
   <style>
     /* ── Themes ──────────────────────────────────────────────────────────────── */
-    :root[data-theme="dark"] {
-      --bg:         #1C1C1E;
-      --surface:    #2C2C2E;
-      --surface-2:  #3A3A3C;
-      --border:     #48484A;
-      --primary:    #F0A020;
-      --primary-lt: #5A3A10;
-      --text:       #F2F2F7;
-      --text-muted: #8E8E93;
-      --completed:  #5E5E60;
-      --soon-bg:    #3A2E10;
-      --soon-fg:    #F5BC50;
-      --later-bg:   #2A2A30;
-      --later-fg:   #A0A090;
-      --day-bg:     #1A2E3A;
-      --day-fg:     #60B8D8;
-      --logo-a-bg:  #F0A020;
-      --logo-a-txt: #1C1C1E;
-      --logo-b-bg:  #1C1C1E;
-      --logo-b-txt: #F0A020;
-      --logo-b-bdr: #F0A020;
-      --settings-bg:#2C2C2E;
-      --btn-del-hbg:#3A1A1A;
-      --btn-del-hfg:#FF6B60;
-    }
     :root[data-theme="light"] {
-      --bg:         #FAFAF6;
-      --surface:    #F3F1E6;
-      --surface-2:  #E9E6D6;
-      --border:     #D8D3BE;
-      --primary:    #C07818;
-      --primary-lt: #F0D090;
-      --text:       #2C2818;
-      --text-muted: #8A8060;
-      --completed:  #C0B090;
-      --soon-bg:    #FDF4DC;
-      --soon-fg:    #9A6010;
-      --later-bg:   #EEEADC;
-      --later-fg:   #7A7055;
-      --day-bg:     #E0EEF5;
-      --day-fg:     #2A6080;
-      --logo-a-bg:  #C07818;
+      --bg:         #FAF6F0;
+      --surface:    #F2E9DE;
+      --surface-2:  #E8DDD0;
+      --border:     #DDD0BF;
+      --primary:    #B8622A;
+      --primary-lt: #E8C4A0;
+      --text:       #3C2A1E;
+      --text-muted: #9C7E6A;
+      --completed:  #C4B0A0;
+      --soon-bg:    #FAEBDF;
+      --soon-fg:    #B8622A;
+      --later-bg:   #EDE8DE;
+      --later-fg:   #7A7258;
+      --day-bg:     #E5EEF7;
+      --day-fg:     #3A5080;
+      --logo-a-bg:  #B8622A;
       --logo-a-txt: #FFFFFF;
       --logo-b-bg:  #FFFFFF;
-      --logo-b-txt: #C07818;
-      --logo-b-bdr: #C07818;
-      --settings-bg:#F3F1E6;
+      --logo-b-txt: #B8622A;
+      --logo-b-bdr: #B8622A;
+      --settings-bg:#F2E9DE;
       --btn-del-hbg:#FAEAE4;
       --btn-del-hfg:#B84030;
+    }
+    :root[data-theme="dark"] {
+      --bg:         #1E1714;
+      --surface:    #2A1E18;
+      --surface-2:  #382820;
+      --border:     #4A3028;
+      --primary:    #E07840;
+      --primary-lt: #5A2810;
+      --text:       #F5EDE8;
+      --text-muted: #907060;
+      --completed:  #604840;
+      --soon-bg:    #3A2010;
+      --soon-fg:    #E89060;
+      --later-bg:   #28201A;
+      --later-fg:   #908060;
+      --day-bg:     #182030;
+      --day-fg:     #60A8C8;
+      --logo-a-bg:  #E07840;
+      --logo-a-txt: #1E1714;
+      --logo-b-bg:  #1E1714;
+      --logo-b-txt: #E07840;
+      --logo-b-bdr: #E07840;
+      --settings-bg:#2A1E18;
+      --btn-del-hbg:#3A1810;
+      --btn-del-hfg:#FF7060;
     }
 
     /* ── Reset ───────────────────────────────────────────────────────────────── */
@@ -379,7 +379,7 @@
     .tag-soon  { background: var(--soon-bg);  color: var(--soon-fg); }
     .tag-later { background: var(--later-bg); color: var(--later-fg); }
     .tag-none  { background: var(--surface-2); color: var(--text-muted); }
-    .tag-day   { background: var(--day-bg);   color: var(--day-fg); }
+    .tag-day   { background: var(--day-bg);   color: var(--day-fg); text-transform: none; letter-spacing: 0; }
 
     /* ── Move button ─────────────────────────────────────────────────────────── */
     .btn-move {
@@ -595,6 +595,11 @@
     <section class="section" id="all-section">
       <div class="add-form">
         <input type="text" id="all-input" placeholder="Add a task…" autocomplete="off" />
+        <select class="day-select" id="all-tag-select" title="Tag">
+          <option value="">No tag</option>
+          <option value="soon">Soon</option>
+          <option value="later">Later</option>
+        </select>
         <button class="btn-add" id="all-add-btn">+</button>
       </div>
       <div id="all-container"></div>
@@ -615,7 +620,7 @@
     // ── Constants ───────────────────────────────────────────────────────────
     const STORAGE_KEY = 'mytodo_v1';
     const DAY_ORDER   = ['mon','tue','wed','thu','fri','sat','sun'];
-    const DAY_LABEL   = { mon:'MON', tue:'TUE', wed:'WED', thu:'THU', fri:'FRI', sat:'SAT', sun:'SUN' };
+    const DAY_LABEL   = { mon:'Mon', tue:'Tue', wed:'Wed', thu:'Thu', fri:'Fri', sat:'Sat', sun:'Sun' };
 
     // ── State ───────────────────────────────────────────────────────────────
     function loadState() {
@@ -811,7 +816,8 @@
     }
 
     // ── ALL ─────────────────────────────────────────────────────────────────
-    const allInput    = document.getElementById('all-input');
+    const allInput     = document.getElementById('all-input');
+    const allTagSelect = document.getElementById('all-tag-select');
     const allContainer = document.getElementById('all-container');
 
     document.getElementById('all-add-btn').addEventListener('click', addAll);
@@ -820,8 +826,8 @@
     function addAll() {
       const text = allInput.value.trim();
       if (!text) return;
-      state.all.push({ id: uid(), text, tag: '' });
-      save(); allInput.value = ''; renderAll();
+      state.all.push({ id: uid(), text, tag: allTagSelect.value });
+      save(); allInput.value = ''; allTagSelect.value = ''; renderAll();
     }
 
     function renderAll() {
@@ -887,8 +893,10 @@
     function addNote() {
       const text = notesInput.value.trim();
       if (!text) return;
-      state.notes.unshift({ id: uid(), text });
+      const note = { id: uid(), text };
+      state.notes.unshift(note);
       save(); notesInput.value = ''; renderNotes();
+      openNoteModal(note);
     }
 
     function renderNotes() {
