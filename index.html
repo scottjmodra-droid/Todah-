@@ -97,7 +97,7 @@
       user-select: none;
     }
     .logo-text {
-      background: #FFD60A;
+      background: var(--primary);
       color: #1C1C1E;
       font-size: 16px;
       font-weight: 800;
@@ -374,6 +374,7 @@
     .tag-later { background: var(--later-bg); color: var(--later-fg); }
     .tag-none  { background: var(--surface-2); color: var(--text-muted); }
     .tag-day   { background: var(--day-bg);   color: var(--day-fg); text-transform: none; letter-spacing: 0; }
+    .tag-today { background: var(--primary);  color: #1C1C1E;       text-transform: none; letter-spacing: 0; }
 
     /* ── Move button ─────────────────────────────────────────────────────────── */
     .btn-move {
@@ -538,7 +539,7 @@
     <div class="header-top">
       <div class="logo">
         <span class="logo-text">ToDo</span>
-        <span class="logo-ver">v2.3</span>
+        <span class="logo-ver">v2.4</span>
       </div>
       <button class="settings-btn" id="settings-btn" title="Settings">⚙︎</button>
     </div>
@@ -571,6 +572,7 @@
       <div class="add-form">
         <input type="text" id="week-input" placeholder="Add to this week…" autocomplete="off" />
         <select class="day-select" id="week-day-select" title="Day">
+          <option value="today">Today</option>
           <option value="">Any</option>
           <option value="mon">Mon</option>
           <option value="tue">Tue</option>
@@ -614,7 +616,7 @@
     // ── Constants ───────────────────────────────────────────────────────────
     const STORAGE_KEY = 'mytodo_v1';
     const DAY_ORDER   = ['mon','tue','wed','thu','fri','sat','sun'];
-    const DAY_LABEL   = { mon:'Mon', tue:'Tue', wed:'Wed', thu:'Thu', fri:'Fri', sat:'Sat', sun:'Sun' };
+    const DAY_LABEL   = { today:'Today', mon:'Mon', tue:'Tue', wed:'Wed', thu:'Thu', fri:'Fri', sat:'Sat', sun:'Sun' };
 
     // ── State ───────────────────────────────────────────────────────────────
     function loadState() {
@@ -628,7 +630,7 @@
     const raw = loadState();
     const state = {
       week:  raw.week  || (raw.today ? raw.today.map(i => ({ ...i, day: i.day || '' })) : []),
-      all:   raw.all   || [],
+      all:   (raw.all || []).map(i => ({ completed: false, ...i })),
       notes: raw.notes || [],
     };
     state.week = state.week.filter(i => !(i.completed && i.completedAt < todayMidnight()));
@@ -741,7 +743,7 @@
       const text = weekInput.value.trim();
       if (!text) return;
       state.week.unshift({ id: uid(), text, completed: false, completedAt: null, day: weekDaySel.value });
-      save(); weekInput.value = ''; weekDaySel.value = ''; renderWeek();
+      save(); weekInput.value = ''; weekDaySel.value = 'today'; renderWeek();
     }
 
     function renderWeek() {
@@ -765,6 +767,7 @@
         attachDrag(list, state.week, renderWeek);
       }
 
+      renderGroup(state.week.filter(i => i.day === 'today'), 'Today');
       renderGroup(state.week.filter(i => !i.day), 'Any day');
       DAY_ORDER.forEach(day => renderGroup(state.week.filter(i => i.day === day), DAY_LABEL[day]));
     }
@@ -777,7 +780,7 @@
         <span class="drag-handle" aria-hidden="true">⠿</span>
         <div class="item-check${item.completed ? ' checked' : ''}" tabindex="0"></div>
         <span class="item-text">${esc(item.text)}</span>
-        <button class="item-tag ${item.day ? 'tag-day' : 'tag-none'}" data-action="day">${item.day ? DAY_LABEL[item.day] : '+ day'}</button>
+        <button class="item-tag ${item.day === 'today' ? 'tag-today' : item.day ? 'tag-day' : 'tag-none'}" data-action="day">${item.day ? DAY_LABEL[item.day] : '+ day'}</button>
         <button class="btn-move" data-action="move" title="Move to All">∷</button>
         <div class="item-actions"><button class="btn-action btn-delete" data-action="delete">✕</button></div>
       `;
@@ -792,7 +795,7 @@
 
       const dayBtn = el.querySelector('[data-action="day"]');
       const openDayMenu = () => showMenu(dayBtn,
-        [{ label:'— Any day', value:'', active:!item.day }, ...DAY_ORDER.map(d => ({ label:DAY_LABEL[d], value:d, active:item.day===d }))],
+        [{ label:'Today', value:'today', active:item.day==='today' }, { label:'— Any day', value:'', active:!item.day }, ...DAY_ORDER.map(d => ({ label:DAY_LABEL[d], value:d, active:item.day===d }))],
         val => { item.day = val; save(); renderWeek(); }
       );
       dayBtn.addEventListener('click', e => { e.stopPropagation(); openDayMenu(); });
@@ -821,7 +824,7 @@
     function addAll() {
       const text = allInput.value.trim();
       if (!text) return;
-      state.all.push({ id: uid(), text, tag: allTagSelect.value });
+      state.all.push({ id: uid(), text, tag: allTagSelect.value, completed: false });
       save(); allInput.value = ''; allTagSelect.value = ''; renderAll();
     }
 
@@ -840,7 +843,8 @@
         const list = document.createElement('div');
         list.className = 'items-list';
         allContainer.appendChild(list);
-        items.forEach(item => list.appendChild(makeAllItem(item)));
+        const display = [...items.filter(i => !i.completed), ...items.filter(i => i.completed)];
+        display.forEach(item => list.appendChild(makeAllItem(item)));
         attachDrag(list, state.all, renderAll);
       });
     }
@@ -850,13 +854,21 @@
       const tagClass = item.tag ? `tag-${item.tag}` : 'tag-none';
       const el = document.createElement('div');
       el.className = 'item'; el.dataset.id = item.id;
+      if (item.completed) el.classList.add('completed');
       el.innerHTML = `
         <span class="drag-handle" aria-hidden="true">⠿</span>
+        <div class="item-check${item.completed ? ' checked' : ''}" tabindex="0"></div>
         <span class="item-text">${esc(item.text)}</span>
         <button class="item-tag ${tagClass}" data-action="tag">${tagLabel}</button>
         <button class="btn-move" data-action="week" title="Move to Week">▦</button>
         <div class="item-actions"><button class="btn-action btn-delete" data-action="delete">✕</button></div>
       `;
+      const check = el.querySelector('.item-check');
+      check.addEventListener('click', () => {
+        item.completed = !item.completed;
+        save(); renderAll();
+      });
+      check.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); item.completed = !item.completed; save(); renderAll(); } });
       const tagBtn = el.querySelector('[data-action="tag"]');
       tagBtn.addEventListener('click', e => {
         e.stopPropagation();
@@ -1087,7 +1099,7 @@
     function generateAppIcon() {
       const S = 180;
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const bg   = isDark ? '#1C1C1E' : '#FFD60A';
+      const bg   = isDark ? '#1C1C1E' : '#C8960A';
       const fg   = isDark ? '#FFD60A' : '#1C1C1E';
       const canvas = document.createElement('canvas');
       canvas.width = S; canvas.height = S;
