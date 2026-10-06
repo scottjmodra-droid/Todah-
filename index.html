@@ -795,7 +795,7 @@
 
       const dayBtn = el.querySelector('[data-action="day"]');
       const openDayMenu = () => showMenu(dayBtn,
-        [{ label:'Today', value:'today', active:item.day==='today' }, { label:'— Any day', value:'', active:!item.day }, ...DAY_ORDER.map(d => ({ label:DAY_LABEL[d], value:d, active:item.day===d }))],
+        [{ label:'Today', value:'today', active:item.day==='today' }, { label:'Any day', value:'', active:!item.day }, ...DAY_ORDER.map(d => ({ label:DAY_LABEL[d], value:d, active:item.day===d }))],
         val => { item.day = val; save(); renderWeek(); }
       );
       dayBtn.addEventListener('click', e => { e.stopPropagation(); openDayMenu(); });
@@ -873,7 +873,7 @@
       tagBtn.addEventListener('click', e => {
         e.stopPropagation();
         showMenu(tagBtn,
-          [{ label:'— No tag', value:'', active:item.tag==='' }, { label:'Soon', value:'soon', active:item.tag==='soon' }, { label:'Later', value:'later', active:item.tag==='later' }],
+          [{ label:'No tag', value:'', active:item.tag==='' }, { label:'Soon', value:'soon', active:item.tag==='soon' }, { label:'Later', value:'later', active:item.tag==='later' }],
           val => { item.tag = val; save(); renderAll(); }
         );
       });
